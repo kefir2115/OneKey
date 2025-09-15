@@ -52,11 +52,19 @@ export default function RootLayout() {
                                 options={{ headerShown: false }}
                             />
                             <Stack.Screen
-                                name="devices/info"
+                                name="base"
                                 options={{ headerShown: false }}
                             />
                             <Stack.Screen
-                                name="base"
+                                name="map/scanner"
+                                options={{ headerShown: false, presentation: "containedModal" }}
+                            />
+                            <Stack.Screen
+                                name="map/locationInfo"
+                                options={{ headerShown: false, presentation: "containedModal" }}
+                            />
+                            <Stack.Screen
+                                name="devices/info"
                                 options={{ headerShown: false }}
                             />
                             <Stack.Screen

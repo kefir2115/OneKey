@@ -6,8 +6,7 @@ import { global } from "@/constants/Styles";
 import useTheme from "@/hooks/useTheme";
 import { setStringAsync } from "expo-clipboard";
 import { useRouter } from "expo-router";
-import { Screen } from "expo-router/build/views/Screen";
-import { StyleSheet } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CopyField } from "../settings";
 
@@ -27,22 +26,24 @@ export default function Devices() {
     const router = useRouter();
     const { color, theme } = useTheme();
 
+    const goToScanner = () => {
+        router.navigate("/map/scanner");
+    };
+
     return (
         <>
-            <Screen
-                name="Devices"
-                options={{ headerHidden: true }}
-            />
             <Header
                 title="Your devices"
                 content={
-                    <Image
+                    <TouchableOpacity
+                        onPress={goToScanner}
                         style={{ aspectRatio: 1, width: "15%", margin: 20 }}
-                        source={theme === "dark" ? qr : qrDark}
-                    />
+                    >
+                        <Image source={theme === "dark" ? qr : qrDark} />
+                    </TouchableOpacity>
                 }
             />
-            <SafeAreaView style={global.container}>
+            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
                 {Device(0)}
                 {Device(1)}
                 {Device(2)}

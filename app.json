@@ -45,6 +45,9 @@
         {
           "locationWhenInUsePermission": "Show current location on map."
         }
+      ],
+      [
+        "expo-camera"
       ]
     ],
     "experiments": {
