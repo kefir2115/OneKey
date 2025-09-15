@@ -1,7 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Button from "@/components/ui/Button";
-import { Image } from 'expo-image';
 import { Stack, useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
 
@@ -12,8 +11,8 @@ export default function NotFound() {
         <ThemedView style={s.view}>
             <Stack.Screen name="Not Found" options={{ headerShown: false }} />
             <ThemedText style={s.title}>Looks like this page doesn&apos;t exist!</ThemedText>
-            <Image style={s.img} source={require("../assets/images/not-found.svg")} alt="image not found"/>
-            <Button style={s.btn} onClick={() => nav.navigate("/")}>Go back</Button>
+            {/* <Image style={s.img} source={require("../assets/images/not-found.svg")} alt="image not found"/> */}
+            <Button style={s.btn} onClick={() => nav.navigate("/welcome")}>Go back</Button>
         </ThemedView>
     );
 }
