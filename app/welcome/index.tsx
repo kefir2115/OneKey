@@ -3,7 +3,6 @@ import { ThemedView } from "@/components/ThemedView";
 import Image from "@/components/ui/Image";
 import { global } from "@/constants/Styles";
 import useTheme from "@/hooks/useTheme";
-import { Screen } from "expo-router/build/views/Screen";
 import { StyleSheet } from "react-native";
 import { Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,10 +16,6 @@ export default function Welcome() {
 
     return (
         <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
-            <Screen
-                name="Welcome"
-                options={{ headerShown: false }}
-            />
             <Image
                 style={s.logo}
                 source={theme === "dark" ? darkLogo : lightLogo}

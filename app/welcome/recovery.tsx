@@ -7,7 +7,6 @@ import { Colors } from "@/constants/Colors";
 import { global } from "@/constants/Styles";
 import useTheme from "@/hooks/useTheme";
 import { getStringAsync } from "expo-clipboard";
-import { Screen } from "expo-router/build/views/Screen";
 import { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { Button, Card } from "react-native-paper";
@@ -38,10 +37,6 @@ export default function Recovery() {
 
     return (
         <>
-            <Screen
-                name="Logout Submit"
-                options={{ headerShown: false }}
-            />
             <Header title="Back" />
             <SafeAreaView style={global.container}>
                 <Image

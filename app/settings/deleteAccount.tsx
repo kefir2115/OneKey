@@ -14,7 +14,7 @@ const check = require("../../assets/images/icons/check.svg");
 const warn = require("../../assets/images/warning.svg");
 const warnDark = require("../../assets/images/warning-dark.svg");
 
-export default function LogoutSubmit() {
+export default function DeleteAccount() {
     const { f } = useLang();
     const { color, theme } = useTheme();
 
@@ -33,7 +33,7 @@ export default function LogoutSubmit() {
                         source={theme === "dark" ? warnDark : warn}
                         style={style.img}
                     />
-                    <ThemedText style={style.text}>{f("logoutMsg")}</ThemedText>
+                    <ThemedText style={style.text}>{f("deleteAccountMsg")}</ThemedText>
                     <TouchableOpacity
                         style={[style.btn, { backgroundColor: color(confirm ? 0 : 3), borderColor: color(!confirm ? 0 : 3) }]}
                         onPress={accept}
@@ -48,7 +48,7 @@ export default function LogoutSubmit() {
                     </TouchableOpacity>
                 </ThemedView>
                 <TouchableOpacity style={[style.btn, { backgroundColor: color(confirm ? 5 : 2) }]}>
-                    <ThemedText style={{ color: Colors.dark[1], fontFamily: "PoppinsBold" }}>{f("logOut")}</ThemedText>
+                    <ThemedText style={{ color: Colors.dark[1], fontFamily: "PoppinsBold" }}>{f("deleteAccount")}</ThemedText>
                 </TouchableOpacity>
             </SafeAreaView>
         </>

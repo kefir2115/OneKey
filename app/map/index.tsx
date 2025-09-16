@@ -1,19 +1,22 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Image from "@/components/ui/Image";
+import generate from "@/components/utils/Seed";
 import { global } from "@/constants/Styles";
+import useLang from "@/hooks/useLang";
 import useTheme from "@/hooks/useTheme";
 import BottomSheet, { BottomSheetFlatList, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Button, Card, Searchbar } from "react-native-paper";
+import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, Card, Modal, Portal, Searchbar } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const map = require("../../assets/images/testmap.png");
 const info = require("../../assets/images/icons/info.svg");
+const xmark = require("../../assets/images/icons/xmark.svg");
 
 const qr = require("../../assets/images/icons/qr.svg");
 const qrDark = require("../../assets/images/icons/qr-dark.svg");
@@ -34,29 +37,55 @@ const locationOnDark = require("../../assets/images/icons/navigation-on-dark.svg
 
 export default function Map() {
     const router = useRouter();
+    const { f } = useLang();
     const { color, theme } = useTheme();
     const [loc, setLoc] = useState<Location.LocationObject | undefined>(undefined);
     const [search, setSearch] = useState("");
+    const [locationModal, setLocationModal] = useState(false);
+    const [locStatus, setLocStatus] = useState(0);
+    const [results, setResults] = useState<number[]>([]);
 
     const snaps = useMemo(() => ["20%", "70%"], []);
 
     useEffect(() => {
         (async () => {
-            Location.getLastKnownPositionAsync({}).then((e) => {
-                if (e === null) return;
+            Location.getLastKnownPositionAsync({})
+                .then((e) => {
+                    if (e === null) return;
 
-                setLoc(e);
-            });
+                    setLoc(e);
+                    setLocStatus(0);
+                })
+                .catch((err) => {
+                    setLoc(undefined);
+                    Location.hasServicesEnabledAsync().then((e) => {
+                        setLocStatus(e ? 2 : 1);
+                    });
+                });
         })();
     }, []);
 
     const updateSearchBar = (str: string) => {
         setSearch(str);
         // TODO: filter items & display best match
+        // pseudo filter
+        let items = 0;
+        if (str.length > 0) items = 3;
+        if (str.length > 5) items = 0;
+
+        setResults((prev) => {
+            prev.splice(0, prev.length);
+            prev.push(
+                ...Array(items)
+                    .fill(0)
+                    .map((e, i) => i)
+            );
+            return prev;
+        });
     };
 
     const openLocationPrompt = () => {
-        if (!loc) router.navigate("/map/locationInfo");
+        if (locStatus !== 0) setLocationModal(true);
     };
 
     const openScanner = () => {
@@ -68,6 +97,15 @@ export default function Map() {
     };
     const goToSettings = () => {
         router.navigate("/settings");
+    };
+
+    const requestLocation = () => {
+        Location.requestForegroundPermissionsAsync().then((e) => {
+            if (e.granted) {
+                setLocationModal(false);
+                setLocStatus(0);
+            }
+        });
     };
 
     return (
@@ -86,7 +124,8 @@ export default function Map() {
                         style={[style.searchBox, { backgroundColor: color(0) }]}
                         inputStyle={{ color: color(1) }}
                         cursorColor={color(4)}
-                        placeholder="Search doors"
+                        placeholder={f("search")}
+                        placeholderTextColor={color(1) + "aa"}
                     />
                     <TouchableOpacity
                         style={{ width: 50, aspectRatio: 1 }}
@@ -111,15 +150,22 @@ export default function Map() {
 
             <View style={[style.bar]}>
                 {!loc && (
-                    <ThemedText style={style.popupLocation}>
-                        <ThemedText style={[{ fontSize: 12, backgroundColor: color(0), padding: 5 }]}>Action required!</ThemedText>
+                    <ThemedText
+                        style={style.popupLocation}
+                        key={"popup"}
+                    >
+                        <ThemedText style={[{ fontSize: 12, backgroundColor: color(0), padding: 5 }]}>{f("actionRequired")}</ThemedText>
                     </ThemedText>
                 )}
                 <TouchableOpacity
                     style={[style.rightImg, loc ? border.use : null, { borderColor: color(4) }]}
                     onPress={openLocationPrompt}
+                    key={"locbtn"}
                 >
-                    <Image source={loc ? (theme === "light" ? locationOn : locationOnDark) : theme === "light" ? location : locationDark} />
+                    <Image
+                        key={"locimg"}
+                        source={loc ? (theme === "light" ? locationOn : locationOnDark) : theme === "light" ? location : locationDark}
+                    />
                 </TouchableOpacity>
             </View>
             <GestureHandlerRootView>
@@ -135,7 +181,7 @@ export default function Map() {
                             style={style.bottomHeader}
                             onPress={openKeyList}
                         >
-                            <ThemedText style={style.cardTitle}>Available gates</ThemedText>
+                            <ThemedText style={style.cardTitle}>{f("gates")}</ThemedText>
                             <Image
                                 source={theme === "light" ? key : keyDark}
                                 style={style.list}
@@ -145,21 +191,85 @@ export default function Map() {
                             horizontal
                             style={{ marginBottom: "15%" }}
                             data={Array(5).fill("")}
-                            renderItem={(e) => {
+                            renderItem={(e: any) => {
                                 return <ItemEntry key={e.index} />;
                             }}
-                            keyExtractor={(i) => i}
+                            keyExtractor={(i: any) => generate()}
                             nestedScrollEnabled
                         />
                     </BottomSheetView>
                 </BottomSheet>
             </GestureHandlerRootView>
+            {search.length > 0 && (
+                <Portal>
+                    <ThemedView style={{ flex: 1, marginTop: "40%" }}>
+                        <ThemedText style={{ textAlign: "center" }}>{f("results", search)}</ThemedText>
+                        {results.length > 0 && (
+                            <GestureHandlerRootView>
+                                <FlatList
+                                    data={Array(5).fill("")}
+                                    renderItem={(e) => {
+                                        if (results.includes(e.index)) return <ItemEntry key={e.index} />;
+                                        return null;
+                                    }}
+                                />
+                            </GestureHandlerRootView>
+                        )}
+                        {results.length === 0 && (
+                            <ThemedView style={{ alignSelf: "center", alignItems: "center", marginTop: "20%" }}>
+                                <ThemedText style={{ textAlign: "center", fontSize: 20, fontFamily: "PoppinsBold" }}>
+                                    {f("noResults")}
+                                </ThemedText>
+                                <Image
+                                    source={xmark}
+                                    style={{ width: "20%", aspectRatio: 1 }}
+                                />
+                            </ThemedView>
+                        )}
+                    </ThemedView>
+                </Portal>
+            )}
+            <Portal>
+                <Modal
+                    visible={locationModal}
+                    onDismiss={() => setLocationModal(false)}
+                >
+                    {locStatus === 1 && (
+                        <Card style={{ backgroundColor: color(0), borderRadius: 20 }}>
+                            <Card.Content>
+                                <ThemedText>{f("noService")}</ThemedText>
+                            </Card.Content>
+                        </Card>
+                    )}
+                    {locStatus === 2 && (
+                        <Card style={{ backgroundColor: color(0), borderRadius: 20 }}>
+                            <Card.Content>
+                                <ThemedText>{f("noPermission")}</ThemedText>
+                            </Card.Content>
+                            <Card.Actions>
+                                <Button onPress={requestLocation}>{f("allow")}</Button>
+                            </Card.Actions>
+                        </Card>
+                    )}
+                </Modal>
+            </Portal>
         </>
     );
 }
 
 const ItemEntry = (_: any) => {
+    const { f } = useLang();
     const { color } = useTheme();
+    const router = useRouter();
+
+    const openDeviceInfo = () => {
+        const info = {}; // TODO: get info of device
+        router.navigate({
+            pathname: "/devices/info",
+            params: info
+        });
+    };
+
     return (
         <Card
             style={[{ backgroundColor: color(0) }, card.container]}
@@ -169,16 +279,18 @@ const ItemEntry = (_: any) => {
             <Card.Content>
                 <ThemedView style={card.header}>
                     <ThemedText style={card.distance}>20m</ThemedText>
-                    <Image
-                        source={info}
-                        style={card.img}
-                    />
+                    <TouchableOpacity onPress={() => openDeviceInfo()}>
+                        <Image
+                            source={info}
+                            style={card.img}
+                        />
+                    </TouchableOpacity>
                 </ThemedView>
                 <ThemedText style={card.name}>Model Gate</ThemedText>
                 <ThemedText style={card.location}>Ernesta Kościńskiego 111-041 Olsztyn</ThemedText>
             </Card.Content>
             <Card.Actions>
-                <Button>Open</Button>
+                <Button>{f("open")}</Button>
             </Card.Actions>
         </Card>
     );
@@ -186,7 +298,8 @@ const ItemEntry = (_: any) => {
 
 const card = StyleSheet.create({
     container: {
-        margin: 20
+        margin: 20,
+        borderRadius: 20
     },
     header: {
         display: "flex",

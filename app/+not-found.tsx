@@ -6,13 +6,21 @@ import { StyleSheet } from "react-native";
 
 export default function NotFound() {
     const nav = useRouter();
-    
+
     return (
         <ThemedView style={s.view}>
-            <Stack.Screen name="Not Found" options={{ headerShown: false }} />
+            <Stack.Screen
+                name="Not Found"
+                options={{ headerShown: false }}
+            />
             <ThemedText style={s.title}>Looks like this page doesn&apos;t exist!</ThemedText>
             {/* <Image style={s.img} source={require("../assets/images/not-found.svg")} alt="image not found"/> */}
-            <Button style={s.btn} onClick={() => nav.navigate("/welcome")}>Go back</Button>
+            <Button
+                style={s.btn}
+                onClick={() => nav.navigate("/welcome")}
+            >
+                Go back
+            </Button>
         </ThemedView>
     );
 }
@@ -28,7 +36,7 @@ const s = StyleSheet.create({
         alignSelf: "center",
         color: "black",
 
-        transform: [{scale: 1.5}]
+        transform: [{ scale: 1.5 }]
     },
     btn: {
         marginBottom: 35

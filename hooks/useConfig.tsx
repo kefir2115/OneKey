@@ -13,6 +13,7 @@ export class Config {
     theme: number = 0;
     pin: string = "";
     biometric: boolean = false;
+    phrase: string = "";
 
     loaded: boolean = false;
 
@@ -23,6 +24,7 @@ export class Config {
         this.theme = !obj.theme ? 0 : obj.theme;
         this.pin = !obj.pin ? "" : obj.pin;
         this.biometric = !obj.biometric ? false : obj.biometric;
+        this.phrase = !obj.phrase ? "" : obj.phrase;
     }
 
     string(): string {
@@ -31,40 +33,39 @@ export class Config {
             language: this.language || "en",
             theme: this.theme || 0,
             pin: this.pin,
-            biometric: this.biometric
+            biometric: this.biometric,
+            phrase: this.phrase
         });
     }
     load(callback?: (c: Config) => void) {
-        FileSystem.getInfoAsync(FILE).then((f) => {
-            if (!f.exists) {
-                this.seed = generate();
-                this.loaded = true;
-                if (callback) callback(this);
+        if (FILE.exists) {
+            const o = new Config(JSON.parse(FILE.textSync()));
 
-                return;
-            }
-            FileSystem.readAsStringAsync(FILE, { encoding: "utf8" }).then((res) => {
-                const o = new Config(JSON.parse(res));
+            this.seed = o.seed;
+            this.language = o.language;
+            this.theme = o.theme;
+            this.pin = o.pin;
+            this.biometric = o.biometric;
+            this.phrase = o.phrase;
+            this.loaded = true;
 
-                this.seed = o.seed;
-                this.language = o.language;
-                this.theme = o.theme;
-                this.pin = o.pin;
-                this.biometric = o.biometric;
-                this.loaded = true;
+            if (callback) callback(this);
+        } else {
+            this.seed = generate();
+            this.loaded = true;
+            if (callback) callback(this);
 
-                if (callback) callback(this);
-            });
-        });
+            return;
+        }
     }
     save() {
-        if (this.loaded) FileSystem.writeAsStringAsync(FILE, this.string(), { encoding: "utf8" });
+        if (this.loaded) FILE.write(this.string());
     }
 }
 
 const ConfigContext = createContext<Config | undefined>(undefined);
 
-const FILE = FileSystem.documentDirectory + "config.txt";
+const FILE = new FileSystem.File(FileSystem.Paths.document, "config.txt");
 
 export function ConfigProvider({ children }: ConfigProviderProps) {
     const [config, setConfig] = useState<Config | null>(null);

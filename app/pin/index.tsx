@@ -3,11 +3,11 @@ import { ThemedView } from "@/components/ThemedView";
 import { Header } from "@/components/ui/Header";
 import { global } from "@/constants/Styles";
 import useConfig from "@/hooks/useConfig";
+import useLang from "@/hooks/useLang";
 import useTheme from "@/hooks/useTheme";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Crypto from "expo-crypto";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Screen } from "expo-router/build/views/Screen";
 import { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { Button, Dialog, Portal, Text } from "react-native-paper";
@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const back = require("../../assets/images/icons/back.svg");
 
 export default function Pin() {
+    const { f } = useLang();
     const config = useConfig();
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -92,13 +93,9 @@ export default function Pin() {
 
     return (
         <>
-            <Screen
-                name="Pin"
-                options={{ headerShown: false }}
-            />
-            <Header title="Back" />
+            <Header title={f("back")} />
             <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
-                <ThemedText style={s.insert}>{prevPin.length === 0 ? "insert pin" : "repeat pin"}</ThemedText>
+                <ThemedText style={s.insert}>{prevPin.length === 0 ? f("pinInsert") : f("pinRepeat")}</ThemedText>
                 <ThemedView style={s.circles}>
                     {Array(4)
                         .fill(0)
@@ -122,9 +119,9 @@ export default function Pin() {
                     visible={dialog}
                     onDismiss={hideDialog}
                 >
-                    <Dialog.Title>Invalid PIN</Dialog.Title>
+                    <Dialog.Title>{f("pinInvalid")}</Dialog.Title>
                     <Dialog.Content>
-                        <Text variant="bodyMedium">You have {tries} tries left.</Text>
+                        <Text variant="bodyMedium">{f("pinTries", String(tries))}</Text>
                     </Dialog.Content>
                     <Dialog.Actions>
                         <Button onPress={hideDialog}>Done</Button>

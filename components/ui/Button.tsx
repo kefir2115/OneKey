@@ -4,13 +4,14 @@ import { Button as Btn } from "react-native-paper";
 import { StyleProps } from "react-native-reanimated";
 
 interface ButtonProps {
-    children?: string;
+    children?: any;
     onClick?: () => void;
     style?: StyleProps;
     textStyle?: StyleProp<TextStyle>;
+    right?: any;
 }
 
-export default function Button({ children, onClick, style, textStyle }: ButtonProps) {
+export default function Button({ children, onClick, style, textStyle, right }: ButtonProps) {
     const { color } = useTheme();
     return (
         <Btn
@@ -19,6 +20,7 @@ export default function Button({ children, onClick, style, textStyle }: ButtonPr
             onPress={onClick}
         >
             {children}
+            {right}
         </Btn>
     );
 }

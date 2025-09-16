@@ -7,7 +7,6 @@ import useConfig from "@/hooks/useConfig";
 import useTheme from "@/hooks/useTheme";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
-import { Screen } from "expo-router/build/views/Screen";
 import { useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Button as PaperButton, Snackbar } from "react-native-paper";
@@ -34,10 +33,6 @@ export default function Activate() {
 
     return (
         <>
-            <Screen
-                name="Activate"
-                options={{ headerShown: false }}
-            />
             <Header title="Activate account" />
             <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
                 <ThemedView style={s.subtitleContainer}>

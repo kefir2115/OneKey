@@ -6,11 +6,12 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "onekey",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.OneKey"
+      "bundleIdentifier": "com.anonymous.OneKey",
+      "userInterfaceStyle": "light"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +19,8 @@
         "backgroundColor": "#333"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.OneKey"
+      "package": "com.anonymous.OneKey",
+      "userInterfaceStyle": "light"
     },
     "web": {
       "bundler": "metro",
@@ -48,7 +50,9 @@
       ],
       [
         "expo-camera"
-      ]
+      ],
+      "./overrideDarkMode.js",
+      "expo-quick-actions"
     ],
     "experiments": {
       "typedRoutes": true

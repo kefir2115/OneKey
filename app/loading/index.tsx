@@ -1,9 +1,9 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { global } from "@/constants/Styles";
+import useLang from "@/hooks/useLang";
 import useTheme from "@/hooks/useTheme";
 import { useLocalSearchParams } from "expo-router";
-import { Screen } from "expo-router/build/views/Screen";
 import LottieView from "lottie-react-native";
 import { useState } from "react";
 import { StyleSheet } from "react-native";
@@ -20,24 +20,21 @@ export interface LoadingProps {
 }
 
 export default function Loading(prop: LoadingProps) {
+    const { f } = useLang();
     const { color } = useTheme();
     const props = useLocalSearchParams();
-    const [subtitle, setSubtitle] = useState(props.subtitle || prop.subtitle || "Loading...");
+    const [subtitle, setSubtitle] = useState(props.subtitle || prop.subtitle || f("loading"));
     const [address, setAddress] = useState(
         props.street || props.code
             ? {
-                  street: (props.street as string) || prop.address?.street || "Street",
-                  code: (props.code as string) || prop.address?.code || "Postal Code"
+                  street: (props.street as string) || prop.address?.street,
+                  code: (props.code as string) || prop.address?.code
               }
             : null
     );
 
     return (
         <>
-            <Screen
-                name="Loading"
-                options={{ headerShown: false }}
-            />
             <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
                 <LottieView
                     source={loader}

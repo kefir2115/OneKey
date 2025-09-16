@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { HeaderTransparent } from "@/components/ui/Header";
 import { global } from "@/constants/Styles";
+import useLang from "@/hooks/useLang";
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import Svg, { Path } from "react-native-svg";
 import Loading from "../loading";
 
 export default function Scanner() {
+    const { f } = useLang();
     const { width, height } = useWindowDimensions();
     const [permission, requestPermission] = useCameraPermissions();
     const router = useRouter();
@@ -74,7 +76,7 @@ export default function Scanner() {
             </View>
             <SafeAreaView style={global.container}>
                 <HeaderTransparent title={"Back"} />
-                <ThemedText style={styles.text}>Scan the QR code</ThemedText>
+                <ThemedText style={styles.text}>{f("qrScan")}</ThemedText>
                 <ThemedText style={styles.text}>{codeResult}</ThemedText>
             </SafeAreaView>
         </View>

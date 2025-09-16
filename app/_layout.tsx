@@ -6,6 +6,7 @@ import "react-native-reanimated";
 import { ConfigProvider } from "@/hooks/useConfig";
 import { LanguageProvider } from "@/hooks/useLang";
 import { ThemeProvider } from "@/hooks/useTheme";
+import * as QuickActions from "expo-quick-actions";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { PaperProvider } from "react-native-paper";
@@ -27,6 +28,13 @@ export default function RootLayout() {
     });
 
     useEffect(() => {
+        QuickActions.setItems([
+            {
+                id: "0",
+                title: "Gate 1",
+                params: { href: "/gate/0" } // change to real gates
+            }
+        ]);
         if (loaded) {
             SplashScreen.hide();
         }
@@ -36,16 +44,60 @@ export default function RootLayout() {
         return null;
     }
     /**
-     * TODO: (widoki)
-     *  info o konkretnym urzadzeniu
-     *  mapy
+     * TODO: (translate)
+     * activate
+     * devices
+     * welcome
+     * not found
+     * (check components as well)
      */
+
+    const def = {
+        lineHeight: 20,
+        fontFamily: "PoppinsLight",
+        fontSize: 16
+    };
 
     return (
         <ConfigProvider>
             <ThemeProvider>
                 <LanguageProvider>
-                    <PaperProvider>
+                    <PaperProvider
+                        theme={{
+                            dark: false,
+                            mode: "exact",
+                            roundness: 15,
+                            fonts: {
+                                bodyLarge: def,
+                                labelLarge: def,
+                                titleLarge: def,
+
+                                bodyMedium: def,
+                                labelMedium: def,
+                                titleMedium: def,
+
+                                bodySmall: def,
+                                labelSmall: def,
+                                titleSmall: def,
+
+                                default: {
+                                    fontFamily: "PoppinsRegular"
+                                },
+                                thin: {
+                                    fontFamily: "PoppinsThin"
+                                },
+                                light: {
+                                    fontFamily: "PoppinsLight"
+                                },
+                                medium: {
+                                    fontFamily: "PoppinsMedium"
+                                },
+                                regular: {
+                                    fontFamily: "PoppinsRegular"
+                                }
+                            }
+                        }}
+                    >
                         <Stack>
                             <Stack.Screen
                                 name="map/index"
@@ -56,11 +108,15 @@ export default function RootLayout() {
                                 options={{ headerShown: false }}
                             />
                             <Stack.Screen
-                                name="map/scanner"
-                                options={{ headerShown: false, presentation: "containedModal" }}
+                                name="settings/deleteAccount"
+                                options={{ headerShown: false }}
                             />
                             <Stack.Screen
-                                name="map/locationInfo"
+                                name="settings/organisations"
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="map/scanner"
                                 options={{ headerShown: false, presentation: "containedModal" }}
                             />
                             <Stack.Screen

@@ -10,12 +10,15 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CopyField } from "../settings";
 
-const back = require("../../assets/images/icons/back.svg");
+// const back = require("../../assets/images/icons/back.svg");
+
+const info = require("../../assets/images/icons/info.svg");
+
 const qr = require("../../assets/images/icons/qr.svg");
 const qrDark = require("../../assets/images/icons/qr-dark.svg");
 
-const copy = require("../../assets/images/icons/copy.svg");
-const copyDark = require("../../assets/images/icons/copy-dark.svg");
+// const copy = require("../../assets/images/icons/copy.svg");
+// const copyDark = require("../../assets/images/icons/copy-dark.svg");
 
 const active = require("../../assets/images/icons/check.svg");
 const disconnected = require("../../assets/images/icons/xmark.svg");
@@ -55,11 +58,29 @@ export default function Devices() {
 }
 
 function Device(status: number) {
+    const router = useRouter();
     const { color, theme } = useTheme();
+
+    const goToDeviceInfo = () => {
+        const device = {}; // TODO: change to real data
+        router.navigate({
+            pathname: "/devices/info",
+            params: device
+        });
+    };
+
     return (
         <ThemedView style={s.device}>
             <ThemedView style={{ flex: 1 }}>
-                <ThemedText style={s.deviceTitle}>Device</ThemedText>
+                <ThemedView style={s.infobar}>
+                    <ThemedText style={s.deviceTitle}>Device</ThemedText>
+                    <TouchableOpacity
+                        style={{ aspectRatio: 1, width: "10%", marginHorizontal: 5 }}
+                        onPress={goToDeviceInfo}
+                    >
+                        <Image source={info} />
+                    </TouchableOpacity>
+                </ThemedView>
                 <ThemedText style={s.deviceCategory}>Device category</ThemedText>
                 <CopyField
                     style={{ width: "70%", marginHorizontal: "3%", margin: "2%" }}
@@ -98,6 +119,12 @@ const s = StyleSheet.create({
 
         width: "90%",
         elevation: 5
+    },
+    infobar: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between"
     },
     deviceTitle: {
         fontSize: 20,
