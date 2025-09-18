@@ -3,6 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Header } from "@/components/ui/Header";
 import Image from "@/components/ui/Image";
 import { global } from "@/constants/Styles";
+import useCache from "@/hooks/useCache";
 import useLang from "@/hooks/useLang";
 import useTheme from "@/hooks/useTheme";
 import { setStringAsync } from "expo-clipboard";
@@ -16,6 +17,7 @@ const copyl = require("../../assets/images/icons/copy.svg");
 const copyDark = require("../../assets/images/icons/copy-dark.svg");
 
 export default function Organisations() {
+    const cache = useCache();
     const { f } = useLang();
     const { color } = useTheme();
     return (
@@ -24,11 +26,16 @@ export default function Organisations() {
             <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
                 <ThemedText style={item.title}>{f("organisations")}</ThemedText>
                 <ScrollView style={{ marginTop: 20, flex: 1 }}>
-                    <Organisation
-                        name="Caruma"
-                        status="on"
-                        secret="dwadnwaodiawiofnaidm"
-                    />
+                    {cache.data.orgs
+                        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+                        .map((org, idx) => (
+                            <Organisation
+                                key={idx}
+                                name={org.name}
+                                status="on"
+                                secret={org.address}
+                            />
+                        ))}
                 </ScrollView>
             </SafeAreaView>
         </>
@@ -48,7 +55,12 @@ function Organisation({ status, name, secret }: { status: "on" | "off"; name: st
                 source={status === "on" ? online : offline}
                 style={item.status}
             />
-            <ThemedText style={item.name}>{name}</ThemedText>
+            <ThemedText
+                style={item.name}
+                numberOfLines={1}
+            >
+                {name || "-"}
+            </ThemedText>
             <TouchableOpacity
                 onPress={copy}
                 style={item.btn}
@@ -79,8 +91,11 @@ const item = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         width: "90%",
+        maxWidth: "90%",
+
         alignItems: "center",
         padding: 15,
+        margin: 10,
         elevation: 5,
         alignSelf: "center",
         borderRadius: 10
@@ -89,7 +104,11 @@ const item = StyleSheet.create({
         width: "10%",
         aspectRatio: 1
     },
-    name: {},
+    name: {
+        fontSize: 12,
+        textOverflow: "ellipsis",
+        width: "60%"
+    },
     btn: {
         display: "flex",
         flexDirection: "row",
@@ -102,7 +121,8 @@ const item = StyleSheet.create({
     },
     value: {
         textOverflow: "ellipsis",
-        width: "80%"
+        width: "80%",
+        fontSize: 12
     },
     copy: {
         width: "20%",

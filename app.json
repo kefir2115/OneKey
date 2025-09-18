@@ -51,7 +51,7 @@
       [
         "expo-camera"
       ],
-      "./overrideDarkMode.js",
+      "expo-local-authentication",
       "expo-quick-actions"
     ],
     "experiments": {

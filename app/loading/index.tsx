@@ -1,15 +1,15 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { global } from "@/constants/Styles";
-import useLang from "@/hooks/useLang";
-import useTheme from "@/hooks/useTheme";
-import { useLocalSearchParams } from "expo-router";
-import LottieView from "lottie-react-native";
-import { useState } from "react";
-import { StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { global } from '@/constants/Styles';
+import useLang from '@/hooks/useLang';
+import useTheme from '@/hooks/useTheme';
+import { useLocalSearchParams } from 'expo-router';
+import LottieView from 'lottie-react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const loader = require("../../assets/images/loader.json");
+const loader = require('../../assets/images/loader.json');
 
 export interface LoadingProps {
     subtitle?: string;
@@ -23,26 +23,29 @@ export default function Loading(prop: LoadingProps) {
     const { f } = useLang();
     const { color } = useTheme();
     const props = useLocalSearchParams();
-    const [subtitle, setSubtitle] = useState(props.subtitle || prop.subtitle || f("loading"));
-    const [address, setAddress] = useState(
-        props.street || props.code
-            ? {
-                  street: (props.street as string) || prop.address?.street,
-                  code: (props.code as string) || prop.address?.code
-              }
-            : null
-    );
+    const [subtitle, setSubtitle] = useState(props.subtitle || prop.subtitle || f('loading'));
+    const [address, setAddress] = useState<{ street: string; code: string } | null>(null);
+
+    useEffect(() => {
+        if (props.street || props.code || prop.address?.code || prop.address?.street)
+            setAddress({
+                street: (props.street as string) || prop.address?.street || '',
+                code: (props.code as string) || prop.address?.code || ''
+            });
+    }, []);
 
     return (
         <>
-            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
-                <LottieView
-                    source={loader}
-                    autoPlay
-                    loop
-                    style={style.spinner}
-                />
-                <ThemedText style={style.subtitle}>{subtitle}</ThemedText>
+            <SafeAreaView style={[global.container, { backgroundColor: color(0), width: '100%' }]}>
+                <View style={style.mid}>
+                    <LottieView
+                        source={loader}
+                        autoPlay
+                        loop
+                        style={style.spinner}
+                    />
+                    <ThemedText style={style.subtitle}>{subtitle}</ThemedText>
+                </View>
                 {address && (
                     <ThemedView style={style.address}>
                         <ThemedText style={style.street}>{address.street}</ThemedText>
@@ -55,30 +58,34 @@ export default function Loading(prop: LoadingProps) {
 }
 
 const style = StyleSheet.create({
+    mid: {
+        alignItems: 'center',
+        top: '30%'
+    },
     spinner: {
-        width: "50%",
+        width: '50%',
         aspectRatio: 1,
         transform: [{ scale: 2 }]
     },
     subtitle: {
-        fontFamily: "PoppinsBold"
+        fontFamily: 'PoppinsBold'
     },
     address: {
-        position: "absolute",
+        position: 'absolute',
         bottom: 0,
-        margin: "5%",
-        padding: "10%",
+        margin: '5%',
+        padding: '10%',
         elevation: 10,
-        width: "90%",
+        width: '90%',
         borderRadius: 20
     },
     street: {
-        textAlign: "center",
-        fontFamily: "PoppinsMedium",
+        textAlign: 'center',
+        fontFamily: 'PoppinsMedium',
         fontSize: 20
     },
     code: {
-        textAlign: "center",
+        textAlign: 'center',
         opacity: 0.7
     }
 });

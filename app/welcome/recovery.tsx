@@ -5,6 +5,7 @@ import Image from "@/components/ui/Image";
 import TextArea from "@/components/ui/TextArea";
 import { Colors } from "@/constants/Colors";
 import { global } from "@/constants/Styles";
+import useLang from "@/hooks/useLang";
 import useTheme from "@/hooks/useTheme";
 import { getStringAsync } from "expo-clipboard";
 import { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ const copy = require("../../assets/images/icons/copy.svg");
 const copyDark = require("../../assets/images/icons/copy-dark.svg");
 
 export default function Recovery() {
+    const { f } = useLang();
     const { color, theme } = useTheme();
     const [isValid, setValid] = useState(false);
     const [value, setValue] = useState("");
@@ -45,7 +47,7 @@ export default function Recovery() {
                 />
                 <Card style={[style.card, { backgroundColor: color(0) }]}>
                     <Card.Content>
-                        <ThemedText>Wprowadź frazę odzyskiwania konta i naciśnij &quot;kontynuuj&quot;</ThemedText>
+                        <ThemedText>{f("recoveryMsg")}</ThemedText>
                         <TextArea
                             containerStyle={style.textArea}
                             value={value}
@@ -55,7 +57,7 @@ export default function Recovery() {
                                 style={[{ backgroundColor: color(2) }, style.clipBox]}
                                 onPress={setFromClipboard}
                             >
-                                <ThemedText style={style.clipText}>Wklej ze schowka</ThemedText>
+                                <ThemedText style={style.clipText}>{f("pasteClipboard")}</ThemedText>
                                 <Image
                                     source={theme === "dark" ? copyDark : copy}
                                     style={style.copyIcon}
@@ -67,7 +69,7 @@ export default function Recovery() {
                                 source={isValid ? check : xmark}
                                 style={style.info}
                             />
-                            <ThemedText style={style.infoText}>Fraza jest {isValid ? "" : "nie"}poprawna</ThemedText>
+                            <ThemedText style={style.infoText}>{f(isValid ? "phraseCorrectInfo" : "phraseIncorrectInfo")}</ThemedText>
                         </ThemedView>
                     </Card.Content>
                     <Card.Actions>
@@ -77,7 +79,7 @@ export default function Recovery() {
                             labelStyle={{ fontFamily: "PoppinsBold" }}
                             textColor={isValid ? Colors.dark[1] : Colors.dark[0] + "9a"}
                         >
-                            Kontynuuj
+                            {f("continue")}
                         </Button>
                     </Card.Actions>
                 </Card>

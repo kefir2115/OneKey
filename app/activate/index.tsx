@@ -4,6 +4,7 @@ import { Header } from "@/components/ui/Header";
 import Image from "@/components/ui/Image";
 import { global } from "@/constants/Styles";
 import useConfig from "@/hooks/useConfig";
+import useLang from "@/hooks/useLang";
 import useTheme from "@/hooks/useTheme";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
@@ -18,6 +19,7 @@ const copy = require("../../assets/images/icons/copy.svg");
 const copyDark = require("../../assets/images/icons/copy-dark.svg");
 
 export default function Activate() {
+    const { f } = useLang();
     const config = useConfig();
     const router = useRouter();
     const { color, theme } = useTheme();
@@ -36,10 +38,7 @@ export default function Activate() {
             <Header title="Activate account" />
             <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
                 <ThemedView style={s.subtitleContainer}>
-                    <ThemedText style={s.subtitle}>
-                        To activate your account, please go to an organisation employee and scan your QRcode. After scanning press
-                        &apos;Activate&apos; button.
-                    </ThemedText>
+                    <ThemedText style={s.subtitle}>{f("activateMsg")}</ThemedText>
                 </ThemedView>
                 <ThemedView style={s.qr}>
                     <QRCode
@@ -64,10 +63,7 @@ export default function Activate() {
                         titleStyle={[s.seedTitle, { color: color(1) }]}
                     />
                     <Card.Content>
-                        <ThemedText style={s.seedSubtitle}>
-                            Save your seed in a safe place. Loosing it might cause problems with account recovery. You can also find it in
-                            settings after this step.
-                        </ThemedText>
+                        <ThemedText style={s.seedSubtitle}>{f("saveSeedMsg")}</ThemedText>
                     </Card.Content>
                 </Card>
                 <PaperButton
@@ -75,7 +71,7 @@ export default function Activate() {
                     disabled={!authorized}
                     style={[s.activateBtn, { backgroundColor: authorized ? color(4) : color(2) }]}
                 >
-                    Activate
+                    {f("activate")}
                 </PaperButton>
             </SafeAreaView>
             <Snackbar
@@ -84,7 +80,7 @@ export default function Activate() {
                 style={{ backgroundColor: color(4) }}
                 duration={Snackbar.DURATION_SHORT}
             >
-                Seed copied to clipboard!
+                {f("valueClipboard")}
             </Snackbar>
         </>
     );

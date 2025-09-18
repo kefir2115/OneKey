@@ -2,17 +2,33 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Image from "@/components/ui/Image";
 import { global } from "@/constants/Styles";
+import useLang from "@/hooks/useLang";
 import useTheme from "@/hooks/useTheme";
+import { useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
 import { Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Welcome() {
+    const { f } = useLang();
+    const router = useRouter();
     const { color, theme } = useTheme();
     const darkLogo = require(`../../assets/images/logo-0-dark.svg`);
     const lightLogo = require(`../../assets/images/logo-0.svg`);
     const darkLandscape = require(`../../assets/images/landscape-dark.svg`);
     const lightLandscape = require(`../../assets/images/landscape.svg`);
+
+    const goToImport = () => {
+        router.navigate("/welcome/recovery");
+    };
+    const goToCreate = () => {
+        router.navigate({
+            pathname: "/pin",
+            params: {
+                next: "/activate"
+            }
+        });
+    };
 
     return (
         <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
@@ -26,9 +42,9 @@ export default function Welcome() {
             />
 
             <ThemedView style={s.texts}>
-                <ThemedText style={s.text}>Jeżeli posiadasz już konto i frazę</ThemedText>
-                <ThemedText style={s.text}>odzyskiwania - naciśni &quot;Importuj konto&quot;.</ThemedText>
-                <ThemedText style={s.text}>Jeżeli nie - &quot;Stwórz konto&quot;</ThemedText>
+                <ThemedText style={s.text}>{f("welcome1")}</ThemedText>
+                <ThemedText style={s.text}>{f("welcome2")}</ThemedText>
+                <ThemedText style={s.text}>{f("welcome3")}</ThemedText>
             </ThemedView>
 
             <ThemedView style={s.buttons}>
@@ -36,15 +52,17 @@ export default function Welcome() {
                     mode="contained"
                     buttonColor={color(3)}
                     style={s.btn}
+                    onPress={goToImport}
                 >
-                    Importuj konto
+                    {f("importAccount")}
                 </Button>
                 <Button
                     mode="contained"
                     buttonColor={color(4)}
                     style={s.btn}
+                    onPress={goToCreate}
                 >
-                    Stwórz konto
+                    {f("createAccount")}
                 </Button>
             </ThemedView>
         </SafeAreaView>

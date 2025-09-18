@@ -5,6 +5,6 @@ export const global = StyleSheet.create({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        flex: 1
+        flex: 1,
     },
 });

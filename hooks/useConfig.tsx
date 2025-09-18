@@ -14,6 +14,7 @@ export class Config {
     pin: string = "";
     biometric: boolean = false;
     phrase: string = "";
+    account: any = {};
 
     loaded: boolean = false;
 
@@ -25,6 +26,7 @@ export class Config {
         this.pin = !obj.pin ? "" : obj.pin;
         this.biometric = !obj.biometric ? false : obj.biometric;
         this.phrase = !obj.phrase ? "" : obj.phrase;
+        this.account = obj.account;
     }
 
     string(): string {
@@ -34,7 +36,8 @@ export class Config {
             theme: this.theme || 0,
             pin: this.pin,
             biometric: this.biometric,
-            phrase: this.phrase
+            phrase: this.phrase,
+            account: this.account
         });
     }
     load(callback?: (c: Config) => void) {
@@ -47,6 +50,8 @@ export class Config {
             this.pin = o.pin;
             this.biometric = o.biometric;
             this.phrase = o.phrase;
+            this.account = o.account;
+
             this.loaded = true;
 
             if (callback) callback(this);
@@ -74,7 +79,9 @@ export function ConfigProvider({ children }: ConfigProviderProps) {
     useEffect(() => {
         const cfg = new Config({ seed: "" });
         cfg.load((loadedCfg) => {
-            setConfig(new Config(loadedCfg));
+            const c = new Config(loadedCfg);
+            c.loaded = true;
+            setConfig(c);
             setLoading(false);
         });
     }, []);

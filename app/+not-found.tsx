@@ -1,23 +1,28 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Button from "@/components/ui/Button";
-import { Stack, useRouter } from "expo-router";
+import Image from "@/components/ui/Image";
+import useLang from "@/hooks/useLang";
+import { useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
 
+const image = require("../assets/images/icons/xmark.svg");
+
 export default function NotFound() {
+    const { f } = useLang();
     const nav = useRouter();
 
     return (
         <ThemedView style={s.view}>
-            <Stack.Screen
-                name="Not Found"
-                options={{ headerShown: false }}
+            <Image
+                style={s.img}
+                source={image}
+                alt="image not found"
             />
-            <ThemedText style={s.title}>Looks like this page doesn&apos;t exist!</ThemedText>
-            {/* <Image style={s.img} source={require("../assets/images/not-found.svg")} alt="image not found"/> */}
+            <ThemedText style={s.title}>{f("pageDontExist")}</ThemedText>
             <Button
                 style={s.btn}
-                onClick={() => nav.navigate("/welcome")}
+                onClick={() => nav.replace("/base")}
             >
                 Go back
             </Button>
@@ -31,8 +36,10 @@ const s = StyleSheet.create({
         textAlign: "center"
     },
     img: {
-        width: 400,
-        height: 400,
+        width: "30%",
+        aspectRatio: 1,
+        margin: "20%",
+
         alignSelf: "center",
         color: "black",
 
