@@ -1,16 +1,17 @@
-import { Device, Organisation } from "@/components/utils/Api";
-import * as FileSystem from "expo-file-system";
-import { createContext, useContext, useEffect, useState } from "react";
+import { Device, Key, Organisation } from '@/components/utils/Api';
+import * as FileSystem from 'expo-file-system';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 export interface CacheProviderProps {
     children: any;
 }
-export type Language = "en" | "pl";
+export type Language = 'en' | 'pl';
 
 export class Cache {
     data = {
         devices: [] as Device[],
-        orgs: [] as Organisation[]
+        orgs: [] as Organisation[],
+        keys: [] as Key[]
     };
 
     loaded: boolean = false;
@@ -42,7 +43,7 @@ export class Cache {
 
 const CacheContext = createContext<Cache | undefined>(undefined);
 
-const FILE = new FileSystem.File(FileSystem.Paths.cache, ".cache.txt");
+const FILE = new FileSystem.File(FileSystem.Paths.cache, '.cache.txt');
 
 export function CacheProvider({ children }: CacheProviderProps) {
     const [cache, setCache] = useState<Cache | null>(null);
@@ -71,6 +72,6 @@ export function CacheProvider({ children }: CacheProviderProps) {
 
 export default function useCache() {
     const c = useContext(CacheContext);
-    if (!c) throw new Error("No cache provider found!");
+    if (!c) throw new Error('No cache provider found!');
     return c;
 }

@@ -98,7 +98,7 @@ function DeviceEntry({ device }: { device: Device }) {
                 <ThemedText style={s.deviceCategory}>{device.description}</ThemedText>
                 <CopyField
                     style={{ width: '70%', marginHorizontal: '3%', margin: '2%' }}
-                    value="abuwd"
+                    value={device.address}
                     copy={setStringAsync}
                 />
             </ThemedView>

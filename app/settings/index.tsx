@@ -1,23 +1,23 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Header } from "@/components/ui/Header";
-import Image from "@/components/ui/Image";
-import { Colors } from "@/constants/Colors";
-import { global } from "@/constants/Styles";
-import useConfig from "@/hooks/useConfig";
-import useLang from "@/hooks/useLang";
-import useTheme from "@/hooks/useTheme";
-import * as Clipboard from "expo-clipboard";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { StyleProp, StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
-import { Card, Divider, Modal, Portal, Snackbar, Switch } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Header } from '@/components/ui/Header';
+import Image from '@/components/ui/Image';
+import { Colors } from '@/constants/Colors';
+import { global } from '@/constants/Styles';
+import useConfig from '@/hooks/useConfig';
+import useLang from '@/hooks/useLang';
+import useTheme from '@/hooks/useTheme';
+import * as Clipboard from 'expo-clipboard';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { StyleProp, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { Card, Divider, Modal, Portal, Snackbar, Switch } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const back = require("../../assets/images/icons/back.svg");
-const lock = require("../../assets/images/icons/lock.svg");
-const copyl = require("../../assets/images/icons/copy.svg");
-const copyDark = require("../../assets/images/icons/copy-dark.svg");
+const back = require('../../assets/images/icons/back.svg');
+const lock = require('../../assets/images/icons/lock.svg');
+const copyl = require('../../assets/images/icons/copy.svg');
+const copyDark = require('../../assets/images/icons/copy-dark.svg');
 
 export default function Settings() {
     const { f } = useLang();
@@ -45,7 +45,7 @@ export default function Settings() {
     };
 
     const copyClipboard = (value: string) => {
-        Clipboard.setStringAsync(config.seed).then(() => {
+        Clipboard.setStringAsync(config.account.seed).then(() => {
             setSnackBar(true);
         });
     };
@@ -58,43 +58,43 @@ export default function Settings() {
     };
     const goToLogoutSubmit = () => {
         config.save();
-        router.navigate("/settings/logoutSubmit");
+        router.navigate('/settings/logoutSubmit');
     };
     const goToOrgs = () => {
         config.save();
-        router.navigate("/settings/organisations");
+        router.navigate('/settings/organisations');
     };
     const goToRemoveAccount = () => {
         config.save();
-        router.navigate("/settings/deleteAccount");
+        router.navigate('/settings/deleteAccount');
     };
 
-    const containerStyle = { backgroundColor: color(0), padding: 20, borderRadius: 20, width: "80%", alignSelf: "center" };
+    const containerStyle = { backgroundColor: color(0), padding: 20, borderRadius: 20, width: '80%', alignSelf: 'center' };
     const Arrow = () => (
         <Image
-            style={{ aspectRatio: 0.5, width: 10, margin: 20, transform: [{ rotate: "180deg" }] }}
+            style={{ aspectRatio: 0.5, width: 10, margin: 20, transform: [{ rotate: '180deg' }] }}
             source={back}
         />
     );
 
     return (
         <>
-            <Header title={f("backToMap")} />
+            <Header title={f('backToMap')} />
             <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
                 <Card style={[styles.card, { backgroundColor: color(0) }]}>
                     <Card.Content>
                         <Item
-                            title={f("appUse")}
+                            title={f('appUse')}
                             right={() => Arrow()}
                         />
                         <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
                         <Item
                             onClick={goToOrgs}
-                            title={f("organisations")}
+                            title={f('organisations')}
                             right={() => Arrow()}
                         />
                         <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
-                        <Item
+                        {/* <Item
                             title={f("darkMode")}
                             right={() => (
                                 <Switch
@@ -107,51 +107,51 @@ export default function Settings() {
                                     }}
                                 />
                             )}
-                        />
+                        /> */}
                         <Item
-                            title={f("expertMode")}
+                            title={f('expertMode')}
                             right={() => (
                                 <Switch
                                     value={expertMode}
                                     onChange={toggleExpertMode}
                                     thumbColor={color(expertMode ? 3 : 2)}
                                     trackColor={{
-                                        true: color(3) + "aa",
-                                        false: color(2) + "aa"
+                                        true: color(3) + 'aa',
+                                        false: color(2) + 'aa'
                                     }}
                                 />
                             )}
                         />
                         <Item
-                            title={f("bioAuth")}
+                            title={f('bioAuth')}
                             right={() => (
                                 <Switch
                                     value={bioAuth}
                                     onChange={toggleBioAuth}
                                     thumbColor={color(bioAuth ? 3 : 2)}
                                     trackColor={{
-                                        true: color(3) + "aa",
-                                        false: color(2) + "aa"
+                                        true: color(3) + 'aa',
+                                        false: color(2) + 'aa'
                                     }}
                                 />
                             )}
                         />
                         <Item
-                            title={f("deleteAccount")}
+                            title={f('deleteAccount')}
                             right={() => Arrow()}
                             onClick={goToRemoveAccount}
                         />
                         {expertMode && (
                             <>
                                 <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
-                                <ThemedText>{f("accAddress")}</ThemedText>
+                                <ThemedText>{f('accAddress')}</ThemedText>
                                 <CopyField
-                                    value={config.seed}
+                                    value={config.account.address}
                                     copy={copyClipboard}
                                 />
-                                <ThemedText>{f("installId")}</ThemedText>
+                                <ThemedText>{f('installId')}</ThemedText>
                                 <CopyField
-                                    value={"abcd"}
+                                    value={'abcd'}
                                     copy={copyClipboard}
                                 />
                             </>
@@ -164,9 +164,9 @@ export default function Settings() {
                         style={[styles.btn, { backgroundColor: color(4) }]}
                         onPress={viewRecovery}
                     >
-                        <ThemedText style={{ color: Colors.dark[1], fontFamily: "PoppinsBold" }}>{f("showRecPhrase")}</ThemedText>
+                        <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>{f('showRecPhrase')}</ThemedText>
                         <Image
-                            style={{ width: 15, marginLeft: "5%" }}
+                            style={{ width: 15, marginLeft: '5%' }}
                             source={lock}
                         />
                     </TouchableOpacity>
@@ -174,7 +174,7 @@ export default function Settings() {
                         style={[styles.btn, { backgroundColor: color(5) }]}
                         onPress={goToLogoutSubmit}
                     >
-                        <ThemedText style={{ color: Colors.dark[1], fontFamily: "PoppinsBold" }}>{f("logOut")}</ThemedText>
+                        <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>{f('logOut')}</ThemedText>
                     </TouchableOpacity>
                 </ThemedView>
             </SafeAreaView>
@@ -184,7 +184,7 @@ export default function Settings() {
                 style={{ backgroundColor: color(4) }}
                 duration={Snackbar.DURATION_SHORT}
             >
-                {f("valueClipboard")}
+                {f('valueClipboard')}
             </Snackbar>
             <Portal>
                 <Modal
@@ -192,15 +192,15 @@ export default function Settings() {
                     onDismiss={() => setRecovery(false)}
                     contentContainerStyle={containerStyle as any}
                 >
-                    <ThemedText>{f("yourRecPhrase")}</ThemedText>
-                    <ThemedText style={[styles.phrase, { borderColor: color(1) }]}>{config.phrase}</ThemedText>
+                    <ThemedText>{f('yourRecPhrase')}</ThemedText>
+                    <ThemedText style={[styles.phrase, { borderColor: color(1) }]}>{config.account.seed}</ThemedText>
                     <TouchableOpacity
                         style={styles.btn2}
                         onPress={copyPhrase}
                     >
-                        <ThemedText>{f("copy")}</ThemedText>
+                        <ThemedText>{f('copy')}</ThemedText>
                         <Image
-                            source={theme === "light" ? copyl : copyDark}
+                            source={theme === 'light' ? copyl : copyDark}
                             style={styles.copy}
                         />
                     </TouchableOpacity>
@@ -218,12 +218,12 @@ export function CopyField({ value, copy, style }: { value: string; copy?: (value
         >
             <ThemedText
                 numberOfLines={1}
-                style={[styles.seedText, { color: color(4), textOverflow: "ellipsis" }]}
+                style={[styles.seedText, { color: color(4), textOverflow: 'ellipsis' }]}
             >
                 {value}
             </ThemedText>
             <Image
-                source={theme === "dark" ? copyDark : copyl}
+                source={theme === 'dark' ? copyDark : copyl}
                 style={{ width: 15, marginLeft: 10 }}
             />
         </TouchableOpacity>
@@ -253,12 +253,12 @@ export function Item({
 
 const styles = StyleSheet.create({
     seed: {
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         height: 40,
-        width: "100%",
+        width: '100%',
 
         paddingHorizontal: 15,
 
@@ -266,35 +266,35 @@ const styles = StyleSheet.create({
     },
     seedText: {
         fontSize: 12,
-        textAlign: "center",
+        textAlign: 'center',
         flex: 1
     },
     card: {
-        width: "90%"
+        width: '90%'
     },
     item: {
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between"
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between'
 
         // margin: 5
     },
     divider: {
         height: 1,
-        width: "90%",
-        alignSelf: "center"
+        width: '90%',
+        alignSelf: 'center'
     },
     btns: {
-        position: "absolute",
-        bottom: "5%",
-        width: "80%"
+        position: 'absolute',
+        bottom: '5%',
+        width: '80%'
     },
     btn: {
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
 
         marginVertical: 5,
         borderRadius: 30,
@@ -303,23 +303,23 @@ const styles = StyleSheet.create({
     watermark: {
         fontSize: 10,
         opacity: 0.7,
-        textAlign: "center",
+        textAlign: 'center',
         margin: 10
     },
     phrase: {
         borderWidth: 1,
-        borderStyle: "dashed",
-        padding: "5%",
+        borderStyle: 'dashed',
+        padding: '5%',
         borderRadius: 20
     },
     btn2: {
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center"
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     copy: {
-        width: "8%",
+        width: '8%',
         aspectRatio: 1,
         marginHorizontal: 10,
         margin: 5

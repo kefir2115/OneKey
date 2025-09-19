@@ -1,4 +1,6 @@
+import { Cache } from '@/hooks/useCache';
 import { Config } from '@/hooks/useConfig';
+import { broadcast, IInvokeScriptParams, invokeScript } from '@waves/waves-transactions';
 import { Device } from './Api';
 
 const TRANSACTION_URL = 'https://api.aggregator.skey.network/mobile/';
@@ -32,12 +34,44 @@ const waitForTx = async (txId: string) => {
     if (json.status !== 'ok') throw new Error(json.status);
 };
 
-export const openDevice = (device: Device, config: Config, callback: (success: boolean) => void) => {
+export const openDevice = async (device: Device, config: Config, cache: Cache, callback: (success: boolean) => void) => {
     try {
-        setTimeout(() => {
-            callback(true);
-        }, 2000);
+        const invokeTx = invokeScript(
+            {
+                dApp: device.supplier,
+                chainId: CHAIN_ID,
+                call: device.owner
+                    ? ({
+                          function: 'deviceActionAs',
+                          args: [
+                              { type: 'string', value: device.key.assetId },
+                              { type: 'string', value: 'open' },
+                              { type: 'string', value: device.key.owner },
+                              { type: 'string', value: config.account.address }
+                          ]
+                      } as IInvokeScriptParams['call'])
+                    : ({
+                          function: 'deviceAction',
+                          args: [
+                              { type: 'string', value: device.key.assetId },
+                              { type: 'string', value: 'open' }
+                          ]
+                      } as IInvokeScriptParams['call'])
+            },
+            config.account.seed
+        );
+
+        const tx = await broadcast(invokeTx, NODE_URL);
+
+        await aggregateTx(invokeTx);
+        await waitForTx(tx.id);
+
+        callback(true);
     } catch (err) {
+        console.error(err);
+
         callback(false);
     }
 };
+
+export async function getAddressStatus(address: string) {}

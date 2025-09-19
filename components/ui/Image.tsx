@@ -1,5 +1,5 @@
-import { ImageProps, ImageStyle, Image as Img } from "expo-image";
-import { StyleProp, StyleSheet, View } from "react-native";
+import { ImageProps, ImageStyle, Image as Img } from 'expo-image';
+import { StyleProp, StyleSheet, View } from 'react-native';
 
 export default function Image(props: ImageProps, image?: StyleProp<ImageStyle>) {
     return (
@@ -8,6 +8,7 @@ export default function Image(props: ImageProps, image?: StyleProp<ImageStyle>) 
                 contentFit="contain"
                 {...props}
                 style={[s.image, image]}
+                accessibilityIgnoresInvertColors
             />
         </View>
     );
@@ -15,7 +16,7 @@ export default function Image(props: ImageProps, image?: StyleProp<ImageStyle>) 
 
 const s = StyleSheet.create({
     image: {
-        width: "100%",
-        height: "100%"
+        width: '100%',
+        height: '100%'
     }
 });

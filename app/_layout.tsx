@@ -7,7 +7,6 @@ import { CacheProvider } from '@/hooks/useCache';
 import { ConfigProvider } from '@/hooks/useConfig';
 import { LanguageProvider } from '@/hooks/useLang';
 import { ThemeProvider } from '@/hooks/useTheme';
-import * as QuickActions from 'expo-quick-actions';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { PaperProvider } from 'react-native-paper';
@@ -29,13 +28,6 @@ export default function RootLayout() {
     });
 
     useEffect(() => {
-        QuickActions.setItems([
-            {
-                id: '0',
-                title: 'Gate 1',
-                params: { href: '/gate/0' } // change to real gates
-            }
-        ]);
         if (loaded) {
             SplashScreen.hide();
         }
@@ -48,8 +40,6 @@ export default function RootLayout() {
      * TODO: transactions
      * create address
      * delete address
-     * get doors
-     * open doors
      *
      * create open success screen
      */
@@ -106,11 +96,11 @@ export default function RootLayout() {
                         >
                             <Stack>
                                 <Stack.Screen
-                                    name="map/index"
+                                    name="base"
                                     options={{ headerShown: false }}
                                 />
                                 <Stack.Screen
-                                    name="base"
+                                    name="map/index"
                                     options={{ headerShown: false }}
                                 />
                                 <Stack.Screen

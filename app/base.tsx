@@ -1,7 +1,7 @@
-import useConfig from "@/hooks/useConfig";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import Loading from "./loading";
+import useConfig from '@/hooks/useConfig';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import Loading from './loading';
 
 export default function Base() {
     const router = useRouter();
@@ -10,9 +10,13 @@ export default function Base() {
     const [hasAccount, setHasAccount] = useState(false); // TODO: read from config
 
     useEffect(() => {
-        if (!hasAccount) router.replace("/welcome");
-        else router.replace("/map");
-    }, [logged]);
+        (async () => {
+            const hasAccount = config.account.seed && config.account.address;
+            const logged = await (async () => true)(); // use getAddressStatus function from Transactions
+            if (!hasAccount || !logged) router.replace('/welcome');
+            else router.replace('/map');
+        })();
+    }, []);
 
     return <>{hasAccount && !logged && <Loading subtitle="Logging in..." />}</>;
 }

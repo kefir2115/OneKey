@@ -23,7 +23,7 @@ export default function Open() {
     useEffect(() => {
         if (device === undefined) return;
 
-        openDevice(device, config, (s) => {
+        openDevice(device, config, cache, (s) => {
             if (s)
                 router.replace({
                     pathname: '/map',

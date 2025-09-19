@@ -5,6 +5,7 @@ import { Device, getDevices, getOrganisations } from '@/components/utils/Api';
 import generate from '@/components/utils/Seed';
 import { global } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
+import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
 import BottomSheet, { BottomSheetFlatList, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -39,6 +40,7 @@ const locationOnDark = require('../../assets/images/icons/navigation-on-dark.svg
 
 export default function Map() {
     const router = useRouter();
+    const config = useConfig();
     const cache = useCache();
     const { f } = useLang();
     const { color, theme } = useTheme();
@@ -55,11 +57,12 @@ export default function Map() {
     useEffect(() => {
         if (loc === undefined) return;
 
-        getOrganisations((o) => {
+        getOrganisations(config, (o) => {
             cache.data.orgs = o;
 
             getDevices(o[0], loc, (list) => {
                 setDevices(list);
+
                 cache.data.devices = list;
                 cache.save();
             });
@@ -71,8 +74,6 @@ export default function Map() {
             Location.getCurrentPositionAsync({ accuracy: Location.LocationAccuracy.High })
                 .then((e) => {
                     if (e === null) return;
-
-                    console.log(e);
 
                     setLoc(e);
                     setLocStatus(0);
@@ -170,7 +171,7 @@ export default function Map() {
             </SafeAreaView>
 
             <View style={[style.bar]}>
-                {!loc && (
+                {locStatus !== 0 && (
                     <ThemedText
                         style={style.popupLocation}
                         key={'popup'}
@@ -185,7 +186,15 @@ export default function Map() {
                 >
                     <Image
                         key={'locimg'}
-                        source={loc ? (theme === 'light' ? locationOn : locationOnDark) : theme === 'light' ? location : locationDark}
+                        source={
+                            locStatus === 0
+                                ? theme === 'light'
+                                    ? locationOn
+                                    : locationOnDark
+                                : theme === 'light'
+                                ? location
+                                : locationDark
+                        }
                     />
                 </TouchableOpacity>
             </View>
@@ -320,7 +329,7 @@ const ItemEntry = ({ device, ...rest }: { device: Device }) => {
             {/* <Card.Title title={"20m"} /> */}
             <Card.Content>
                 <ThemedView style={card.header}>
-                    <ThemedText style={card.distance}>{device.distance.toFixed(1)}</ThemedText>
+                    <ThemedText style={card.distance}>{device.distance.toFixed(1)}m</ThemedText>
                     <TouchableOpacity onPress={() => openDeviceInfo()}>
                         <Image
                             source={info}
