@@ -1,10 +1,9 @@
 import { Colors } from '@/constants/Colors';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { ColorSchemeName, useColorScheme } from 'react-native';
+import { Appearance, ColorSchemeName, useColorScheme } from 'react-native';
 
 type ContextType = {
     theme: ColorSchemeName;
-    update: () => void;
     color: (n: number) => string;
 };
 
@@ -14,18 +13,18 @@ export function ThemeProvider({ children }: { children: any }) {
     const col = useColorScheme();
     const [theme, setTheme] = useState<ColorSchemeName>(col);
 
-    function update() {
-        setTheme((t) => col);
-    }
     function color(n: number) {
         return Colors[theme as 'light' | 'dark'][n];
     }
 
     useEffect(() => {
-        update();
-    }, [col]);
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme === 'dark' ? 'dark' : 'light');
+        });
+        return () => listener.remove();
+    }, []);
 
-    return <ThemeContext.Provider value={{ theme, update, color }}>{children}</ThemeContext.Provider>;
+    return <ThemeContext.Provider value={{ theme, color }}>{children}</ThemeContext.Provider>;
 }
 
 export default function useTheme() {

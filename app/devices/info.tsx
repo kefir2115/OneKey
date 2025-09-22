@@ -13,6 +13,8 @@ import { setStringAsync } from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Map, { Marker } from 'react-native-maps';
 import { Card, List } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,6 +41,9 @@ const moreDark = require('../../assets/images/icons/more-dark.svg');
 
 const copyl = require('../../assets/images/icons/copy.svg');
 const copyDark = require('../../assets/images/icons/copy-dark.svg');
+
+const pin = require('../../assets/images/icons/pin-1.png');
+const pinCurrent = require('../../assets/images/icons/pin-0.png');
 
 export default function Info() {
     const { f } = useLang();
@@ -73,7 +78,7 @@ export default function Info() {
     if (!dev) return <View></View>;
 
     return (
-        <>
+        <GestureHandlerRootView>
             <Header title={'Back'} />
             <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
                 <ThemedText style={style.deviceName}>{dev.name || f('gateFallback')}</ThemedText>
@@ -147,14 +152,22 @@ export default function Info() {
                                 </ThemedView>
                                 <ThemedText style={map.distance}>{dev.distance.toFixed(1)}m</ThemedText>
                             </Card.Content>
-                            {/* TODO: dummy */}
-                            <View style={map.mapOverlay}>
-                                <Image
-                                    style={map.map}
-                                    source={maptest}
-                                    contentFit="cover"
+                            <Map
+                                style={map.map}
+                                initialRegion={{
+                                    latitude: dev.lat,
+                                    longitude: dev.lng,
+                                    latitudeDelta: 0.005,
+                                    longitudeDelta: 0.005
+                                }}
+                            >
+                                <Marker
+                                    coordinate={{ latitude: dev.lat, longitude: dev.lng }}
+                                    key={0}
+                                    title={dev.name || f('gateFallback')}
+                                    image={pinCurrent}
                                 />
-                            </View>
+                            </Map>
                             <ThemedText style={{ textAlign: 'right', fontFamily: 'PoppinsLight' }}>
                                 {dev.details.physicalAddress.addressLine1 + ' ' + dev.details.physicalAddress.addressLine2 ||
                                     f('addressFallback')}{' '}
@@ -208,7 +221,7 @@ export default function Info() {
                     </Card>
                 )}
             </SafeAreaView>
-        </>
+        </GestureHandlerRootView>
     );
 }
 
@@ -304,7 +317,7 @@ const map = StyleSheet.create({
         marginTop: '5%'
     },
     map: {
-        width: '100%',
+        width: '90%',
         aspectRatio: 1
     }
 });

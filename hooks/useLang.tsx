@@ -78,6 +78,15 @@ export class Lang {
     pageDontExist = '';
     opening = '';
 
+    gateOpenSuccess = '';
+    gateOpenFail = '';
+
+    tutorial1 = '';
+    tutorial2 = '';
+    tutorial3 = '';
+    tutorial4 = '';
+    tutorial5 = '';
+
     constructor(l: Lang) {
         this.changeSelf(l);
     }
@@ -166,7 +175,16 @@ const LANG = {
         continue: 'Continue',
 
         pageDontExist: "Looks like this page doesn't exist!",
-        opening: 'Opening...'
+        opening: 'Opening...',
+
+        gateOpenSuccess: 'Gate opened successfully!',
+        gateOpenFail: 'Failed to open gate!',
+
+        tutorial1: 'Find devices by scrolling this element up',
+        tutorial2: 'Press this button show device details',
+        tutorial3: 'You can scroll this list to see more devices',
+        tutorial4: 'Press the key or title to open device list',
+        tutorial5: 'Widgets are located in upper area'
     } as Lang),
     pl: new Lang({
         gates: 'Dostępne wejścia',
@@ -244,7 +262,16 @@ const LANG = {
         continue: 'Kontynnuj',
 
         pageDontExist: 'Wygląda na to, że ta strona nie istnieje!',
-        opening: 'Otwieranie...'
+        opening: 'Otwieranie...',
+
+        gateOpenSuccess: 'Brama otwarta pomyślnie!',
+        gateOpenFail: 'Nie udało się otworzyć bramy!',
+
+        tutorial1: 'Znajdziesz urządzenia przewijając tę listę w górę',
+        tutorial2: 'Wciśnij ten przycisk, aby zobaczyć szczegóły urządzenia',
+        tutorial3: 'Możesz przewijać tę listę, aby zobaczyć więcej urządzeń',
+        tutorial4: 'Wciśnij klucz lub tytuł, aby otworzyć listę urządzeń',
+        tutorial5: 'Widżety znajdują się w górnej części ekranu'
     } as Lang)
 };
 

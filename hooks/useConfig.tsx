@@ -11,7 +11,6 @@ export class Config {
     theme: number = 0;
     pin: string = '';
     biometric: boolean = false;
-    phrase: string = '';
     account: any = {};
 
     loaded: boolean = false;
@@ -22,7 +21,6 @@ export class Config {
         this.theme = !obj.theme ? 0 : obj.theme;
         this.pin = !obj.pin ? '' : obj.pin;
         this.biometric = !obj.biometric ? false : obj.biometric;
-        this.phrase = !obj.phrase ? '' : obj.phrase;
         this.account = obj.account;
     }
 
@@ -32,7 +30,6 @@ export class Config {
             theme: this.theme || 0,
             pin: this.pin,
             biometric: this.biometric,
-            phrase: this.phrase,
             account: this.account
         });
     }
@@ -44,7 +41,6 @@ export class Config {
             this.theme = o.theme;
             this.pin = o.pin;
             this.biometric = o.biometric;
-            this.phrase = o.phrase;
             this.account = o.account;
 
             this.loaded = true;

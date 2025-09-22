@@ -2,24 +2,36 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import Image from '@/components/ui/Image';
 import { Device, getDevices, getOrganisations } from '@/components/utils/Api';
-import generate from '@/components/utils/Seed';
-import { global } from '@/constants/Styles';
+import Path from '@/components/utils/PathUtils';
+import { global, mapDark, mapLight } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
-import BottomSheet, { BottomSheetFlatList, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
-import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { ListRenderItemInfo, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+    ListRenderItemInfo,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    StyleSheet,
+    TouchableOpacity,
+    useWindowDimensions,
+    View
+} from 'react-native';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Button, Card, Modal, Portal, Searchbar } from 'react-native-paper';
+import MapView, { Marker } from 'react-native-maps';
+import { Button, Card, Modal, Portal, Searchbar, Snackbar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path as PathView } from 'react-native-svg';
 
 const map = require('../../assets/images/testmap.png');
 const info = require('../../assets/images/icons/info.svg');
 const xmark = require('../../assets/images/icons/xmark.svg');
+const check = require('../../assets/images/icons/check.svg');
 
 const qr = require('../../assets/images/icons/qr.svg');
 const qrDark = require('../../assets/images/icons/qr-dark.svg');
@@ -38,29 +50,60 @@ const locationDark = require('../../assets/images/icons/navigation-dark.svg');
 const locationOn = require('../../assets/images/icons/navigation-on.svg');
 const locationOnDark = require('../../assets/images/icons/navigation-on-dark.svg');
 
+const marker = require('../../assets/images/icons/pin-1.png');
+const markerCurrent = require('../../assets/images/icons/pin-0.png');
+
 export default function Map() {
     const router = useRouter();
     const config = useConfig();
     const cache = useCache();
+    const props = useLocalSearchParams();
     const { f } = useLang();
     const { color, theme } = useTheme();
+    const [snackOpen, setSnackOpen] = useState(props.opened !== undefined);
     const [loc, setLoc] = useState<Location.LocationObject | undefined>(undefined);
     const [search, setSearch] = useState('');
     const [locationModal, setLocationModal] = useState(false);
+    const [isSatelite, setSatelite] = useState(false);
+    const [currentPin, setCurrentPin] = useState(0);
     const [locStatus, setLocStatus] = useState(0);
-    const [results, setResults] = useState<number[]>([]);
+    const [results, setResults] = useState<Device[]>([]);
+    const [tutorial, setTutorial] = useState<{ step: number; path: string; text: { value: string; x: number; y: number } }>({
+        step: -1,
+        path: '',
+        text: { value: '', x: 0, y: 0 }
+    });
 
     const [devices, setDevices] = useState(cache.data.devices);
 
-    const snaps = useMemo(() => ['20%', '70%'], []);
+    const mapRef = useRef<MapView>(null);
+    const bottomSheet = useRef<BottomSheet>(null);
+    const flatRef = useRef<FlatList>(null);
+
+    const { width, height } = useWindowDimensions();
+
+    const ITEM_WIDTH = width * 0.9;
+
+    const snaps = useMemo(() => ['10%', '40%'], []);
 
     useEffect(() => {
+        if (props.tutorial && tutorial.step === -1) nextTutorial();
         if (loc === undefined) return;
 
         getOrganisations(config, (o) => {
+            if (o.length === 0) return;
             cache.data.orgs = o;
 
-            getDevices(o[0], loc, (list) => {
+            if (!config.account.org) {
+                config.account.org = o[0].address;
+                config.save();
+            }
+
+            const org = cache.data.orgs.find((e) => e.address === config.account.org);
+            if (!org) return;
+
+            getDevices(org, loc, (list) => {
+                if (list.length === 0) return;
                 setDevices(list);
 
                 cache.data.devices = list;
@@ -70,39 +113,60 @@ export default function Map() {
     }, [cache, loc]);
 
     useEffect(() => {
-        (async () => {
-            Location.getCurrentPositionAsync({ accuracy: Location.LocationAccuracy.High })
-                .then((e) => {
-                    if (e === null) return;
+        getLoc(false);
+        Location.watchPositionAsync(
+            {
+                accuracy: Location.LocationAccuracy.High,
+                timeInterval: 10000
+            },
+            (geoloc) => {
+                if (geoloc === null) return;
 
-                    setLoc(e);
-                    setLocStatus(0);
-                })
-                .catch((err) => {
-                    setLoc(undefined);
-                    Location.hasServicesEnabledAsync().then((e) => {
-                        setLocStatus(e ? 2 : 1);
-                    });
-                });
-        })();
+                setLoc(geoloc);
+                setLocStatus(0);
+            }
+        ).then((sub) => {
+            sub.remove();
+        });
     }, []);
+
+    useEffect(() => {
+        const device = devices[currentPin];
+        if (devices.length > currentPin) flatRef.current?.scrollToIndex({ index: currentPin, animated: false, viewPosition: 0.5 });
+        mapRef.current?.animateToRegion(
+            {
+                latitude: device.lat,
+                longitude: device.lng,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.005
+            },
+            500
+        );
+    }, [currentPin]);
+
+    async function getLoc(current: boolean) {
+        const func = current ? Location.getCurrentPositionAsync : Location.getLastKnownPositionAsync;
+
+        func({ accuracy: Location.LocationAccuracy.High })
+            .then((e) => {
+                if (e === null) return;
+
+                setLoc(e);
+                setLocStatus(0);
+            })
+            .catch((err) => {
+                setLoc(undefined);
+                Location.hasServicesEnabledAsync().then((e) => {
+                    setLocStatus(e ? 2 : 1);
+                });
+            });
+    }
 
     const updateSearchBar = (str: string) => {
         setSearch(str);
-        // TODO: filter items & display best match
-        // pseudo filter
-        let items = 0;
-        if (str.length > 0) items = 3;
-        if (str.length > 5) items = 0;
 
         setResults((prev) => {
-            prev.splice(0, prev.length);
-            prev.push(
-                ...Array(items)
-                    .fill(0)
-                    .map((e, i) => i)
-            );
-            return prev;
+            return devices.filter((item) => (item.name + ' ' + item.description).toLowerCase().includes(str.toLowerCase()));
         });
     };
 
@@ -112,13 +176,19 @@ export default function Map() {
 
     const openScanner = () => {
         router.navigate('/map/scanner');
+        setResults([]);
+        setSearch('');
     };
 
     const openKeyList = () => {
         router.navigate('/devices');
+        setResults([]);
+        setSearch('');
     };
     const goToSettings = () => {
         router.navigate('/settings');
+        setResults([]);
+        setSearch('');
     };
 
     const requestLocation = () => {
@@ -130,15 +200,111 @@ export default function Map() {
         });
     };
 
+    const onScroll = (ev: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const index = Math.round(ev.nativeEvent.contentOffset.x / ITEM_WIDTH);
+        setCurrentPin(index);
+    };
+
+    const nextTutorial = () => {
+        let path = '',
+            text = '';
+        let x = 0,
+            y = 0;
+
+        switch (tutorial.step + 1) {
+            case 0: {
+                path = new Path(width, height).getRoundRect(0, height - height * 0.1, width, height * 0.1, 20);
+                text = f('tutorial1');
+                y = height - height * 0.1 - 40;
+                break;
+            }
+            case 1: {
+                bottomSheet.current?.snapToIndex(1);
+                path = new Path(width, height).getCircle(width - width * 0.22, height - height * 0.21, 30);
+                text = f('tutorial2');
+                y = height - height * 0.3 - 40;
+                break;
+            }
+            case 2: {
+                path = new Path(width, height).getRoundRect(0, height - height * 0.25, width, height * 0.2, 20);
+                text = f('tutorial3');
+                y = height - height * 0.3 - 40;
+                break;
+            }
+            case 3: {
+                path = new Path(width, height).getRoundRect(0, height - height * 0.35, width, height * 0.1, 20);
+                text = f('tutorial4');
+                y = height - height * 0.4 - 40;
+                break;
+            }
+            case 4: {
+                path = new Path(width, height).getRoundRect(0, 0, width, height * 0.4, 20);
+                text = f('tutorial5');
+                y = height * 0.45;
+                break;
+            }
+            default: {
+                router.dismissAll();
+                path = '';
+                text = '';
+                break;
+            }
+        }
+
+        setTutorial((prev) => {
+            return { ...{ step: tutorial.step + 1, path, text: { ...{ value: text, x, y } } } };
+        });
+    };
+
     return (
-        <>
-            {/* TODO: change to actual google maps >.< */}
-            <Image
-                source={map}
-                style={style.map}
-                contentFit="cover"
-            />
-            <SafeAreaView style={global.container}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: color(0) }}>
+            {loc !== undefined && (
+                <MapView
+                    loadingEnabled
+                    loadingBackgroundColor={color(0)}
+                    loadingIndicatorColor={color(1)}
+                    region={
+                        devices[currentPin]
+                            ? {
+                                  latitude: devices[currentPin].lat,
+                                  longitude: devices[currentPin].lng,
+                                  latitudeDelta: 0.005,
+                                  longitudeDelta: 0.005
+                              }
+                            : {
+                                  latitude: loc.coords.latitude,
+                                  longitude: loc.coords.longitude,
+                                  latitudeDelta: 0.005,
+                                  longitudeDelta: 0.005
+                              }
+                    }
+                    ref={mapRef}
+                    mapType={isSatelite ? 'satellite' : 'standard'}
+                    showsUserLocation
+                    showsMyLocationButton={false}
+                    showsCompass={false}
+                    style={{ width: '100%', height: '100%' }}
+                    customMapStyle={theme === 'dark' ? mapDark : mapLight}
+                >
+                    {devices.map((device, idx) => (
+                        <Marker
+                            key={'marker' + idx}
+                            coordinate={{ latitude: device.lat, longitude: device.lng }}
+                            image={currentPin === idx ? markerCurrent : marker}
+                            onSelect={() => setCurrentPin(idx)}
+                        />
+                    ))}
+                </MapView>
+            )}
+            <SafeAreaView
+                style={[
+                    global.container,
+                    {
+                        position: 'absolute',
+                        flex: 1
+                    }
+                ]}
+            >
                 <View style={style.topbar}>
                     <Searchbar
                         value={search}
@@ -156,11 +322,16 @@ export default function Map() {
                         <Image source={theme === 'light' ? setting : settingDark} />
                     </TouchableOpacity>
                 </View>
-                <View style={style.bar}>
-                    <TouchableOpacity style={[style.rightImg]}>
+                <View
+                    style={style.bar}
+                    pointerEvents="box-none"
+                >
+                    <TouchableOpacity
+                        style={[style.rightImg]}
+                        onPress={() => setSatelite((s) => !s)}
+                    >
                         <Image source={theme === 'light' ? layers : layersDark} />
                     </TouchableOpacity>
-
                     <TouchableOpacity
                         style={[style.rightImg]}
                         onPress={openScanner}
@@ -168,73 +339,83 @@ export default function Map() {
                         <Image source={theme === 'light' ? qr : qrDark} />
                     </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-
-            <View style={[style.bar]}>
-                {locStatus !== 0 && (
-                    <ThemedText
-                        style={style.popupLocation}
-                        key={'popup'}
-                    >
-                        <ThemedText style={[{ fontSize: 12, backgroundColor: color(0), padding: 5 }]}>{f('actionRequired')}</ThemedText>
-                    </ThemedText>
-                )}
-                <TouchableOpacity
-                    style={[style.rightImg, loc ? border.use : null, { borderColor: color(4) }]}
-                    onPress={openLocationPrompt}
-                    key={'locbtn'}
+                <View
+                    style={[style.bar]}
+                    pointerEvents="box-none"
                 >
-                    <Image
-                        key={'locimg'}
-                        source={
-                            locStatus === 0
-                                ? theme === 'light'
-                                    ? locationOn
-                                    : locationOnDark
-                                : theme === 'light'
-                                ? location
-                                : locationDark
-                        }
-                    />
-                </TouchableOpacity>
-            </View>
-            <GestureHandlerRootView>
-                <BottomSheet
-                    index={0}
-                    snapPoints={snaps}
-                    style={{ borderRadius: 20 }}
-                    overDragResistanceFactor={0}
-                    backgroundStyle={{ backgroundColor: color(0) }}
-                >
-                    <BottomSheetView>
-                        <TouchableOpacity
-                            style={style.bottomHeader}
-                            onPress={openKeyList}
+                    {locStatus !== 0 && (
+                        <ThemedText
+                            style={style.popupLocation}
+                            key={'popup'}
                         >
-                            <ThemedText style={style.cardTitle}>{f('gates')}</ThemedText>
-                            <Image
-                                source={theme === 'light' ? key : keyDark}
-                                style={style.list}
-                            />
-                        </TouchableOpacity>
-                        <BottomSheetFlatList
-                            horizontal
-                            style={{ marginBottom: '15%' }}
-                            data={devices}
-                            renderItem={(e: ListRenderItemInfo<any>) => {
-                                return (
-                                    <ItemEntry
-                                        device={e.item}
-                                        key={e.index}
-                                    />
-                                );
-                            }}
-                            keyExtractor={(i: any) => generate()}
-                            nestedScrollEnabled
+                            <ThemedText style={[{ fontSize: 12, backgroundColor: color(0), padding: 5 }]}>{f('actionRequired')}</ThemedText>
+                        </ThemedText>
+                    )}
+                    <TouchableOpacity
+                        style={[style.rightImg, loc ? border.use : null, { borderColor: color(4) }]}
+                        onPress={openLocationPrompt}
+                        key={'locbtn'}
+                    >
+                        <Image
+                            key={'locimg'}
+                            source={
+                                locStatus === 0
+                                    ? theme === 'light'
+                                        ? locationOn
+                                        : locationOnDark
+                                    : theme === 'light'
+                                    ? location
+                                    : locationDark
+                            }
                         />
-                    </BottomSheetView>
-                </BottomSheet>
-            </GestureHandlerRootView>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+            <BottomSheet
+                index={0}
+                snapPoints={snaps}
+                ref={bottomSheet}
+                style={{ borderRadius: 20 }}
+                handleIndicatorStyle={{ backgroundColor: color(3) + 'aa' }}
+                overDragResistanceFactor={0}
+                enablePanDownToClose={false}
+                enableContentPanningGesture={false}
+                enableHandlePanningGesture={true}
+                animateOnMount={true}
+                backgroundStyle={{ backgroundColor: color(0), pointerEvents: 'none' }}
+            >
+                <BottomSheetView>
+                    <TouchableOpacity
+                        style={style.bottomHeader}
+                        onPress={openKeyList}
+                    >
+                        <ThemedText style={style.cardTitle}>{f('gates')}</ThemedText>
+                        <Image
+                            source={theme === 'light' ? key : keyDark}
+                            style={style.list}
+                        />
+                    </TouchableOpacity>
+                    <FlatList
+                        horizontal
+                        style={{ marginBottom: '15%', height: '100%' }}
+                        data={devices}
+                        ref={flatRef}
+                        onScroll={onScroll}
+                        snapToInterval={ITEM_WIDTH}
+                        pagingEnabled
+                        renderItem={(e: ListRenderItemInfo<any>) => {
+                            return (
+                                <ItemEntry
+                                    device={e.item}
+                                    key={e.index}
+                                />
+                            );
+                        }}
+                        keyExtractor={(i: any) => randomUUID()}
+                        nestedScrollEnabled
+                    />
+                </BottomSheetView>
+            </BottomSheet>
             {search.length > 0 && (
                 <Portal>
                     <ThemedView style={{ flex: 1, marginTop: '40%' }}>
@@ -243,12 +424,17 @@ export default function Map() {
                             <GestureHandlerRootView>
                                 <FlatList
                                     data={devices}
+                                    keyExtractor={(it, i) => String(i)}
                                     renderItem={(e) => {
-                                        if (results.includes(e.index))
+                                        if (results.includes(e.item))
                                             return (
                                                 <ItemEntry
                                                     device={e.item}
                                                     key={e.index}
+                                                    onClick={() => {
+                                                        setResults([]);
+                                                        setSearch('');
+                                                    }}
                                                 />
                                             );
                                         return null;
@@ -293,17 +479,59 @@ export default function Map() {
                         </Card>
                     )}
                 </Modal>
+                <Snackbar
+                    onDismiss={() => setSnackOpen(false)}
+                    visible={snackOpen}
+                    duration={3000}
+                    style={[{ backgroundColor: color(0), borderWidth: 1 }, { borderColor: props.opened === 'true' ? '#0f0' : '#f00' }]}
+                >
+                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                        <Image
+                            source={props.opened === 'true' ? check : xmark}
+                            style={{ height: 20, aspectRatio: 1, margin: 5 }}
+                        />
+                        <ThemedText>{f(props.opened === 'true' ? 'gateOpenSuccess' : 'gateOpenFail')}</ThemedText>
+                    </View>
+                </Snackbar>
             </Portal>
-        </>
+            {tutorial.step >= 0 && (
+                <Portal>
+                    <TouchableOpacity
+                        style={[StyleSheet.absoluteFill]}
+                        onPress={nextTutorial}
+                    >
+                        <Svg
+                            width={width}
+                            height={height}
+                        >
+                            <PathView
+                                d={tutorial.path}
+                                fill="#0000005e"
+                                fillRule="evenodd"
+                            />
+                        </Svg>
+                    </TouchableOpacity>
+                    <ThemedText
+                        style={{ position: 'absolute', top: tutorial.text.y, left: tutorial.text.x, textAlign: 'center', width: '100%' }}
+                    >
+                        {tutorial.text.value}
+                    </ThemedText>
+                    <ThemedText style={{ position: 'absolute', top: '50%', textAlign: 'center', width: '100%', opacity: 0.7 }}>
+                        {'Click anywhere to continue...'}
+                    </ThemedText>
+                </Portal>
+            )}
+        </GestureHandlerRootView>
     );
 }
 
-const ItemEntry = ({ device, ...rest }: { device: Device }) => {
+const ItemEntry = ({ device, onClick, ...rest }: { device: Device; onClick?: () => void }) => {
     const { f } = useLang();
     const { color } = useTheme();
     const router = useRouter();
 
     const openDeviceInfo = () => {
+        onClick?.();
         router.navigate({
             pathname: '/devices/info',
             params: {
@@ -313,6 +541,7 @@ const ItemEntry = ({ device, ...rest }: { device: Device }) => {
     };
 
     const openDoor = () => {
+        onClick?.();
         router.replace({
             pathname: '/devices/open',
             params: {
@@ -326,7 +555,6 @@ const ItemEntry = ({ device, ...rest }: { device: Device }) => {
             style={[{ backgroundColor: color(0) }, card.container]}
             {...rest}
         >
-            {/* <Card.Title title={"20m"} /> */}
             <Card.Content>
                 <ThemedView style={card.header}>
                     <ThemedText style={card.distance}>{device.distance.toFixed(1)}m</ThemedText>
@@ -343,7 +571,6 @@ const ItemEntry = ({ device, ...rest }: { device: Device }) => {
                     {device.details.physicalAddress.postcode} {device.details.physicalAddress.city}
                 </ThemedText>
             </Card.Content>
-            {/* Ernesta Kościńskiego 111-041 Olsztyn */}
             <Card.Actions>
                 <Button onPress={openDoor}>{f('open')}</Button>
             </Card.Actions>
@@ -378,11 +605,6 @@ const card = StyleSheet.create({
 });
 
 const style = StyleSheet.create({
-    map: {
-        position: 'absolute',
-        width: '100%',
-        height: '100%'
-    },
     topbar: {
         display: 'flex',
         flexDirection: 'row',

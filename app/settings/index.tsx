@@ -8,8 +8,8 @@ import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
 import * as Clipboard from 'expo-clipboard';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { StyleProp, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Card, Divider, Modal, Portal, Snackbar, Switch } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,17 +23,23 @@ export default function Settings() {
     const { f } = useLang();
     const config = useConfig();
     const router = useRouter();
-    const { color, theme, update } = useTheme();
+    const params = useLocalSearchParams();
+    const { color, theme } = useTheme();
     const [darkMode, setDarkMode] = useState(config.theme === 0);
     const [expertMode, setExpertMode] = useState(false);
     const [bioAuth, setBioAuth] = useState(config.biometric);
     const [snackBar, setSnackBar] = useState(false);
     const [recovery, setRecovery] = useState(false);
 
+    useEffect(() => {
+        if (params.action === 'viewRecovery') {
+            setRecovery(true);
+        }
+    }, [params]);
+
     const toggleDarkMode = () => {
         config.theme = darkMode ? 1 : 0;
         config.save();
-        update();
 
         setDarkMode(!darkMode);
     };
@@ -51,7 +57,13 @@ export default function Settings() {
     };
 
     const viewRecovery = () => {
-        setRecovery(true);
+        router.replace({
+            pathname: '/pin',
+            params: {
+                next: '/settings',
+                action: 'viewRecovery'
+            }
+        });
     };
     const copyPhrase = () => {
         copyClipboard(config.phrase);
@@ -67,6 +79,19 @@ export default function Settings() {
     const goToRemoveAccount = () => {
         config.save();
         router.navigate('/settings/deleteAccount');
+    };
+    const goToTutorial = () => {
+        config.save();
+        router.navigate({
+            pathname: '/map',
+            params: {
+                tutorial: '1'
+            }
+        });
+    };
+    const closePhrase = () => {
+        setRecovery(false);
+        router.replace('/settings');
     };
 
     const containerStyle = { backgroundColor: color(0), padding: 20, borderRadius: 20, width: '80%', alignSelf: 'center' };
@@ -86,6 +111,7 @@ export default function Settings() {
                         <Item
                             title={f('appUse')}
                             right={() => Arrow()}
+                            onClick={goToTutorial}
                         />
                         <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
                         <Item
@@ -189,7 +215,7 @@ export default function Settings() {
             <Portal>
                 <Modal
                     visible={recovery}
-                    onDismiss={() => setRecovery(false)}
+                    onDismiss={() => closePhrase()}
                     contentContainerStyle={containerStyle as any}
                 >
                     <ThemedText>{f('yourRecPhrase')}</ThemedText>

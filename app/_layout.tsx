@@ -1,6 +1,7 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import 'react-native-get-random-values';
 import 'react-native-reanimated';
 
 import { CacheProvider } from '@/hooks/useCache';
@@ -38,10 +39,10 @@ export default function RootLayout() {
     }
     /**
      * TODO: transactions
-     * create address
+     * create address?
+     * verify user async after start
+     * account recovery
      * delete address
-     *
-     * create open success screen
      */
 
     const def = {
@@ -117,7 +118,7 @@ export default function RootLayout() {
                                 />
                                 <Stack.Screen
                                     name="map/scanner"
-                                    options={{ headerShown: false, presentation: 'containedModal' }}
+                                    options={{ headerShown: false }}
                                 />
                                 <Stack.Screen
                                     name="devices/info"

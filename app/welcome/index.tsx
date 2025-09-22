@@ -1,17 +1,21 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import Image from "@/components/ui/Image";
-import { global } from "@/constants/Styles";
-import useLang from "@/hooks/useLang";
-import useTheme from "@/hooks/useTheme";
-import { useRouter } from "expo-router";
-import { StyleSheet } from "react-native";
-import { Button } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import Image from '@/components/ui/Image';
+import { global } from '@/constants/Styles';
+import useConfig from '@/hooks/useConfig';
+import useLang from '@/hooks/useLang';
+import useTheme from '@/hooks/useTheme';
+import { seedUtils } from '@waves/waves-transactions';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Welcome() {
     const { f } = useLang();
     const router = useRouter();
+    const config = useConfig();
     const { color, theme } = useTheme();
     const darkLogo = require(`../../assets/images/logo-0-dark.svg`);
     const lightLogo = require(`../../assets/images/logo-0.svg`);
@@ -19,32 +23,40 @@ export default function Welcome() {
     const lightLandscape = require(`../../assets/images/landscape.svg`);
 
     const goToImport = () => {
-        router.navigate("/welcome/recovery");
+        router.navigate('/welcome/recovery');
     };
     const goToCreate = () => {
         router.navigate({
-            pathname: "/pin",
+            pathname: '/pin',
             params: {
-                next: "/activate"
+                next: '/activate'
             }
         });
     };
+
+    useEffect(() => {
+        if (!config.account.address) {
+            config.account.seed = seedUtils.generateNewSeed(15);
+            config.account.address = new seedUtils.Seed(config.account.seed).address;
+            config.save();
+        }
+    }, [config]);
 
     return (
         <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
             <Image
                 style={s.logo}
-                source={theme === "dark" ? darkLogo : lightLogo}
+                source={theme === 'dark' ? darkLogo : lightLogo}
             />
             <Image
                 style={s.img}
-                source={theme === "dark" ? darkLandscape : lightLandscape}
+                source={theme === 'dark' ? darkLandscape : lightLandscape}
             />
 
             <ThemedView style={s.texts}>
-                <ThemedText style={s.text}>{f("welcome1")}</ThemedText>
-                <ThemedText style={s.text}>{f("welcome2")}</ThemedText>
-                <ThemedText style={s.text}>{f("welcome3")}</ThemedText>
+                <ThemedText style={s.text}>{f('welcome1')}</ThemedText>
+                <ThemedText style={s.text}>{f('welcome2')}</ThemedText>
+                <ThemedText style={s.text}>{f('welcome3')}</ThemedText>
             </ThemedView>
 
             <ThemedView style={s.buttons}>
@@ -54,7 +66,7 @@ export default function Welcome() {
                     style={s.btn}
                     onPress={goToImport}
                 >
-                    {f("importAccount")}
+                    {f('importAccount')}
                 </Button>
                 <Button
                     mode="contained"
@@ -62,7 +74,7 @@ export default function Welcome() {
                     style={s.btn}
                     onPress={goToCreate}
                 >
-                    {f("createAccount")}
+                    {f('createAccount')}
                 </Button>
             </ThemedView>
         </SafeAreaView>
@@ -71,29 +83,29 @@ export default function Welcome() {
 
 const s = StyleSheet.create({
     logo: {
-        width: "100%",
+        width: '100%',
         aspectRatio: 198 / 60,
 
         padding: 20,
-        marginTop: "20%"
+        marginTop: '20%'
     },
     img: {
-        height: "30%",
+        height: '30%',
         aspectRatio: 544 / 232,
-        marginTop: "20%"
+        marginTop: '20%'
     },
     texts: {
-        marginVertical: "10%"
+        marginVertical: '10%'
     },
     text: {
         fontSize: 12,
-        textAlign: "center"
+        textAlign: 'center'
     },
     buttons: {
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
 
-        width: "80%"
+        width: '80%'
     },
     btn: {
         margin: 5

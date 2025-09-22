@@ -75,3 +75,23 @@ export const openDevice = async (device: Device, config: Config, cache: Cache, c
 };
 
 export async function getAddressStatus(address: string) {}
+export async function deleteAddress(address: string) {}
+export async function logOut(config: Config, cache: Cache): Promise<boolean> {
+    try {
+        config.account = {};
+        config.pin = '';
+        config.save();
+
+        cache.data = {
+            devices: [],
+            keys: [],
+            orgs: []
+        };
+        cache.save();
+
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
