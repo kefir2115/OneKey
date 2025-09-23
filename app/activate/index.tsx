@@ -3,13 +3,14 @@ import { ThemedView } from '@/components/ThemedView';
 import Button from '@/components/ui/Button';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
+import { getOrganisations } from '@/components/utils/Api';
 import { global } from '@/constants/Styles';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Button as PaperButton, Snackbar } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
@@ -28,6 +29,17 @@ export default function Activate() {
     const [authorized, setAuthorized] = useState(false);
     const [snackBar, setSnackBar] = useState(false);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            getOrganisations(config, (list) => {
+                if (list.length > 0) setAuthorized(true);
+            });
+        }, 5000);
+        return (() => {
+            clearInterval(interval);
+        })();
+    }, []);
+
     const copyAddress = () => {
         Clipboard.setStringAsync(config.account.address).then(() => {
             setSnackBar(true);
@@ -38,9 +50,20 @@ export default function Activate() {
             setSnackBar(true);
         });
     };
-    /**
-     * TODO: Listen to blockchain if address is activated
-     */
+
+    const activate = () => {
+        if (!authorized) return;
+
+        config.account.active = true;
+        config.save();
+        router.dismissAll();
+        router.replace({
+            pathname: '/map',
+            params: {
+                tutorial: '1'
+            }
+        });
+    };
 
     return (
         <>
@@ -60,7 +83,12 @@ export default function Activate() {
                     onPress={copyAddress}
                     style={[s.seed, { backgroundColor: color(2) }]}
                 >
-                    <ThemedText style={[s.seedText, { color: color(4) }]}>{config.account.address}</ThemedText>
+                    <ThemedText
+                        style={[s.seedText, { color: color(4) }]}
+                        numberOfLines={1}
+                    >
+                        {config.account.address}
+                    </ThemedText>
                     <Image
                         source={theme === 'dark' ? copyDark : copy}
                         style={{ width: 15, marginLeft: 10 }}
@@ -82,6 +110,7 @@ export default function Activate() {
                     mode="contained"
                     disabled={!authorized}
                     style={[s.activateBtn, { backgroundColor: authorized ? color(4) : color(2) }]}
+                    onPress={activate}
                 >
                     {f('activate')}
                 </PaperButton>
@@ -126,7 +155,8 @@ const s = StyleSheet.create({
     seedText: {
         fontSize: 12,
         textAlign: 'center',
-        flex: 1
+        flex: 1,
+        textOverflow: 'ellipsis'
     },
     seedContainer: {
         // marginHorizontal: "10%",

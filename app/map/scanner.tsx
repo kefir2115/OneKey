@@ -1,35 +1,66 @@
-import { ThemedText } from "@/components/ThemedText";
-import { HeaderTransparent } from "@/components/ui/Header";
-import { global } from "@/constants/Styles";
-import useLang from "@/hooks/useLang";
-import { BarcodeScanningResult, CameraView, useCameraPermissions } from "expo-camera";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
-import Loading from "../loading";
+import { ThemedText } from '@/components/ThemedText';
+import Button from '@/components/ui/Button';
+import { HeaderTransparent } from '@/components/ui/Header';
+import Path from '@/components/utils/PathUtils';
+import { global } from '@/constants/Styles';
+import useCache from '@/hooks/useCache';
+import useLang from '@/hooks/useLang';
+import useTheme from '@/hooks/useTheme';
+import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, View } from 'react-native';
+import { Card, Modal, Portal } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path as PathView } from 'react-native-svg';
+import Loading from '../loading';
 
 export default function Scanner() {
     const { f } = useLang();
-    const { width, height } = useWindowDimensions();
+    const { color } = useTheme();
+    const cache = useCache();
+    const { width, height } = Dimensions.get('screen');
     const [permission, requestPermission] = useCameraPermissions();
     const router = useRouter();
 
-    const [codeResult, setCodeResult] = useState("");
+    const [codeResult, setCodeResult] = useState('');
+    const [modal, setModal] = useState(false);
 
-    if (!permission) return <Loading subtitle="Loading..." />;
+    useEffect(() => {
+        if (!codeResult || codeResult.length === 0) return;
+
+        if (codeResult.length === 35) {
+            const exists = cache.data.devices.find((device) => device.address === codeResult) !== undefined;
+            if (exists) {
+                setModal(false);
+                router.navigate({
+                    pathname: '/devices/info',
+                    params: {
+                        address: codeResult
+                    }
+                });
+            } else {
+                setModal(true);
+            }
+        }
+    }, [codeResult]);
+
+    if (!permission) return <Loading />;
 
     if (!permission.granted) {
         requestPermission().then((p) => {
             if (!p.granted) router.back();
         });
-        return <Loading subtitle="Loading..." />;
+        return <Loading />;
     }
 
     const qrScanned = (e: BarcodeScanningResult) => {
-        if (e.type === "qr" && e.data !== codeResult) {
-            setCodeResult(e.data);
+        if (e.type === 'qr' && e.data !== codeResult) {
+            const split = e.data.split('iot/');
+            if (split.length > 1) setCodeResult(split[1]);
+            else {
+                setModal(true);
+            }
         }
     };
 
@@ -39,19 +70,7 @@ export default function Scanner() {
     const top = (height - rectHeight) / 2;
     const r = (rectWidth / 100) * 10;
 
-    const path = `
-        M0 0 H${width} V${height} H0 Z
-        M${left + r} ${top}
-        H${left + rectWidth - r}
-        A${r} ${r} 0 0 1 ${left + rectWidth} ${top + r}
-        V${top + rectHeight - r}
-        A${r} ${r} 0 0 1 ${left + rectWidth - r} ${top + rectHeight}
-        H${left + r}
-        A${r} ${r} 0 0 1 ${left} ${top + rectHeight - r}
-        V${top + r}
-        A${r} ${r} 0 0 1 ${left + r} ${top}
-        Z
-    `;
+    const path = new Path(width, height).getRoundRect(left, top, rectWidth, rectHeight, r);
 
     return (
         <View style={styles.container}>
@@ -67,7 +86,7 @@ export default function Scanner() {
                     width={width}
                     height={height}
                 >
-                    <Path
+                    <PathView
                         d={path}
                         fill="#00000099"
                         fillRule="evenodd"
@@ -75,24 +94,51 @@ export default function Scanner() {
                 </Svg>
             </View>
             <SafeAreaView style={global.container}>
-                <HeaderTransparent title={"Back"} />
-                <ThemedText style={styles.text}>{f("qrScan")}</ThemedText>
-                <ThemedText style={styles.text}>{codeResult}</ThemedText>
+                <HeaderTransparent title={'Back'} />
+                <ThemedText style={styles.text}>{f('qrScan')}</ThemedText>
             </SafeAreaView>
+            <Portal>
+                <Modal
+                    visible={modal}
+                    onDismiss={() => setModal(false)}
+                >
+                    <Card style={{ backgroundColor: color(0) }}>
+                        <Card.Content>
+                            <ThemedText style={styles.line1}>{f('invalidAddr1')}</ThemedText>
+                            <ThemedText style={styles.line2}>{f('invalidAddr2')}</ThemedText>
+                            <ThemedText style={styles.line2}>{f('invalidAddr3')}</ThemedText>
+                        </Card.Content>
+                        <Card.Actions>
+                            <Button onClick={() => setModal(false)}>{f('close')}</Button>
+                        </Card.Actions>
+                    </Card>
+                </Modal>
+            </Portal>
         </View>
     );
 }
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: "black"
+        flex: 1
     },
     text: {
-        top: "10%",
+        top: '10%',
 
         fontSize: 25,
         lineHeight: 30,
-        fontFamily: "PoppinsMedium",
-        color: "#fff"
+        fontFamily: 'PoppinsMedium',
+        color: '#fff'
+    },
+    snack: {
+        borderWidth: 1,
+        borderColor: '#ff5b5bff'
+    },
+    line1: {
+        fontSize: 20,
+        fontFamily: 'PoppinsMedium'
+    },
+    line2: {
+        fontFamily: 'PoppinsLIght',
+        marginLeft: 10
     }
 });

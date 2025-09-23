@@ -1,4 +1,4 @@
-package com.anonymous.OneKey
+package io.caruma.OneKey
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

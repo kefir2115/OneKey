@@ -12,6 +12,7 @@ export class Config {
     pin: string = '';
     biometric: boolean = false;
     account: any = {};
+    shortcuts: { address: string; name: string }[] = [];
 
     loaded: boolean = false;
 
@@ -21,7 +22,8 @@ export class Config {
         this.theme = !obj.theme ? 0 : obj.theme;
         this.pin = !obj.pin ? '' : obj.pin;
         this.biometric = !obj.biometric ? false : obj.biometric;
-        this.account = obj.account;
+        this.account = obj.account || {};
+        this.shortcuts = obj.shortcuts || [];
     }
 
     string(): string {
@@ -30,7 +32,8 @@ export class Config {
             theme: this.theme || 0,
             pin: this.pin,
             biometric: this.biometric,
-            account: this.account
+            account: this.account,
+            shortcuts: this.shortcuts
         });
     }
     load(callback?: (c: Config) => void) {
@@ -42,6 +45,7 @@ export class Config {
             this.pin = o.pin;
             this.biometric = o.biometric;
             this.account = o.account;
+            this.shortcuts = o.shortcuts;
 
             this.loaded = true;
 

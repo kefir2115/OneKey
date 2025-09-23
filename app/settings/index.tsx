@@ -66,7 +66,7 @@ export default function Settings() {
         });
     };
     const copyPhrase = () => {
-        copyClipboard(config.phrase);
+        copyClipboard(config.account.seed);
     };
     const goToLogoutSubmit = () => {
         config.save();

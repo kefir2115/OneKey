@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>onekey</string>
-          <string>com.anonymous.OneKey</string>
+          <string>io.caruma.OneKey</string>
         </array>
       </dict>
       <dict>

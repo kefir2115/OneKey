@@ -35,7 +35,8 @@ export default function Welcome() {
     };
 
     useEffect(() => {
-        if (!config.account.address) {
+        if (!config.account || !config.account.address) {
+            config.account = {};
             config.account.seed = seedUtils.generateNewSeed(15);
             config.account.address = new seedUtils.Seed(config.account.seed).address;
             config.save();

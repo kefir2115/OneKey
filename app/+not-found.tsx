@@ -1,12 +1,12 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import Button from "@/components/ui/Button";
-import Image from "@/components/ui/Image";
-import useLang from "@/hooks/useLang";
-import { useRouter } from "expo-router";
-import { StyleSheet } from "react-native";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import Button from '@/components/ui/Button';
+import Image from '@/components/ui/Image';
+import useLang from '@/hooks/useLang';
+import { useRouter } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
-const image = require("../assets/images/icons/xmark.svg");
+const image = require('../assets/images/icons/xmark.svg');
 
 export default function NotFound() {
     const { f } = useLang();
@@ -19,10 +19,10 @@ export default function NotFound() {
                 source={image}
                 alt="image not found"
             />
-            <ThemedText style={s.title}>{f("pageDontExist")}</ThemedText>
+            <ThemedText style={s.title}>{f('pageDontExist')}</ThemedText>
             <Button
                 style={s.btn}
-                onClick={() => nav.replace("/base")}
+                onClick={() => nav.replace('/index')}
             >
                 Go back
             </Button>
@@ -33,15 +33,15 @@ export default function NotFound() {
 const s = StyleSheet.create({
     title: {
         fontSize: 20,
-        textAlign: "center"
+        textAlign: 'center'
     },
     img: {
-        width: "30%",
+        width: '30%',
         aspectRatio: 1,
-        margin: "20%",
+        margin: '20%',
 
-        alignSelf: "center",
-        color: "black",
+        alignSelf: 'center',
+        color: 'black',
 
         transform: [{ scale: 1.5 }]
     },
@@ -49,9 +49,9 @@ const s = StyleSheet.create({
         marginBottom: 35
     },
     view: {
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        height: "100%"
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        height: '100%'
     }
 });

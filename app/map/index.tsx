@@ -73,6 +73,7 @@ export default function Map() {
         path: '',
         text: { value: '', x: 0, y: 0 }
     });
+    const [snapCause, setSnapCause] = useState<'map' | 'list' | null>(null);
 
     const [devices, setDevices] = useState(cache.data.devices);
 
@@ -90,26 +91,13 @@ export default function Map() {
         if (props.tutorial && tutorial.step === -1) nextTutorial();
         if (loc === undefined) return;
 
-        getOrganisations(config, (o) => {
-            if (o.length === 0) return;
-            cache.data.orgs = o;
-
-            if (!config.account.org) {
-                config.account.org = o[0].address;
-                config.save();
-            }
-
-            const org = cache.data.orgs.find((e) => e.address === config.account.org);
-            if (!org) return;
-
-            getDevices(org, loc, (list) => {
-                if (list.length === 0) return;
-                setDevices(list);
-
-                cache.data.devices = list;
-                cache.save();
-            });
-        });
+        loadInfo();
+        const interval = setInterval(() => {
+            loadInfo();
+        }, 10000);
+        return (() => {
+            clearInterval(interval);
+        })();
     }, [cache, loc]);
 
     useEffect(() => {
@@ -125,14 +113,20 @@ export default function Map() {
                 setLoc(geoloc);
                 setLocStatus(0);
             }
-        ).then((sub) => {
-            sub.remove();
-        });
+        )
+            .then((sub) => {
+                sub.remove();
+            })
+            .catch(() => {
+                // console.log('No location permission!');
+            });
     }, []);
 
     useEffect(() => {
         const device = devices[currentPin];
-        if (devices.length > currentPin) flatRef.current?.scrollToIndex({ index: currentPin, animated: false, viewPosition: 0.5 });
+        if (devices.length > currentPin && snapCause !== 'list') {
+            flatRef.current?.scrollToIndex({ index: currentPin, animated: true, viewPosition: 0.5 });
+        }
         mapRef.current?.animateToRegion(
             {
                 latitude: device.lat,
@@ -143,6 +137,30 @@ export default function Map() {
             500
         );
     }, [currentPin]);
+
+    function loadInfo() {
+        if (loc !== undefined)
+            getOrganisations(config, (o) => {
+                if (o.length === 0) return;
+                cache.data.orgs = o;
+
+                if (!config.account.org) {
+                    config.account.org = o[0].address;
+                    config.save();
+                }
+
+                const org = cache.data.orgs.find((e) => e.address === config.account.org);
+                if (!org) return;
+
+                getDevices(org, loc, (list) => {
+                    if (list.length === 0) return;
+                    setDevices(list);
+
+                    cache.data.devices = list;
+                    cache.save();
+                });
+            });
+    }
 
     async function getLoc(current: boolean) {
         const func = current ? Location.getCurrentPositionAsync : Location.getLastKnownPositionAsync;
@@ -196,11 +214,14 @@ export default function Map() {
             if (e.granted) {
                 setLocationModal(false);
                 setLocStatus(0);
+                getLoc(true);
             }
         });
     };
 
     const onScroll = (ev: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (snapCause !== 'list') return;
+
         const index = Math.round(ev.nativeEvent.contentOffset.x / ITEM_WIDTH);
         setCurrentPin(index);
     };
@@ -263,7 +284,7 @@ export default function Map() {
                     loadingEnabled
                     loadingBackgroundColor={color(0)}
                     loadingIndicatorColor={color(1)}
-                    region={
+                    initialRegion={
                         devices[currentPin]
                             ? {
                                   latitude: devices[currentPin].lat,
@@ -291,7 +312,10 @@ export default function Map() {
                             key={'marker' + idx}
                             coordinate={{ latitude: device.lat, longitude: device.lng }}
                             image={currentPin === idx ? markerCurrent : marker}
-                            onSelect={() => setCurrentPin(idx)}
+                            onSelect={() => {
+                                setSnapCause('map');
+                                setCurrentPin(idx);
+                            }}
                         />
                     ))}
                 </MapView>
@@ -314,6 +338,7 @@ export default function Map() {
                         cursorColor={color(4)}
                         placeholder={f('search')}
                         placeholderTextColor={color(1) + 'aa'}
+                        iconColor={color(1)}
                     />
                     <TouchableOpacity
                         style={{ width: 50, aspectRatio: 1 }}
@@ -395,25 +420,39 @@ export default function Map() {
                             style={style.list}
                         />
                     </TouchableOpacity>
-                    <FlatList
-                        horizontal
-                        style={{ marginBottom: '15%', height: '100%' }}
-                        data={devices}
-                        ref={flatRef}
-                        onScroll={onScroll}
-                        snapToInterval={ITEM_WIDTH}
-                        pagingEnabled
-                        renderItem={(e: ListRenderItemInfo<any>) => {
-                            return (
-                                <ItemEntry
-                                    device={e.item}
-                                    key={e.index}
-                                />
-                            );
-                        }}
-                        keyExtractor={(i: any) => randomUUID()}
-                        nestedScrollEnabled
-                    />
+                    {devices.length !== 0 && (
+                        <FlatList
+                            horizontal
+                            style={{ marginBottom: '15%', height: '100%' }}
+                            data={devices}
+                            ref={flatRef}
+                            onScroll={(ev) => {
+                                setSnapCause('list');
+                                onScroll(ev);
+                            }}
+                            snapToInterval={ITEM_WIDTH}
+                            pagingEnabled
+                            renderItem={(e: ListRenderItemInfo<any>) => {
+                                return (
+                                    <ItemEntry
+                                        device={e.item}
+                                        key={e.index}
+                                    />
+                                );
+                            }}
+                            keyExtractor={(i: any) => randomUUID()}
+                            nestedScrollEnabled
+                        />
+                    )}
+                    {devices.length === 0 && (
+                        <View style={nodevices.container}>
+                            <Image
+                                source={xmark}
+                                style={nodevices.icon}
+                            />
+                            <ThemedText style={nodevices.message}>{f('noDevices')}</ThemedText>
+                        </View>
+                    )}
                 </BottomSheetView>
             </BottomSheet>
             {search.length > 0 && (
@@ -506,7 +545,7 @@ export default function Map() {
                         >
                             <PathView
                                 d={tutorial.path}
-                                fill="#0000005e"
+                                fill="#0000008f"
                                 fillRule="evenodd"
                             />
                         </Svg>
@@ -517,7 +556,7 @@ export default function Map() {
                         {tutorial.text.value}
                     </ThemedText>
                     <ThemedText style={{ position: 'absolute', top: '50%', textAlign: 'center', width: '100%', opacity: 0.7 }}>
-                        {'Click anywhere to continue...'}
+                        {f('tutorialClick')}
                     </ThemedText>
                 </Portal>
             )}
@@ -664,5 +703,24 @@ const border = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'solid',
         borderRadius: 100
+    }
+});
+const nodevices = StyleSheet.create({
+    container: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        marginTop: '10%'
+    },
+    icon: {
+        width: '20%',
+        aspectRatio: 1
+    },
+    message: {
+        fontSize: 18,
+        lineHeight: 24,
+        fontFamily: 'PoppinsMedium'
     }
 });

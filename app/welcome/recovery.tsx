@@ -7,9 +7,9 @@ import { Colors } from '@/constants/Colors';
 import { global } from '@/constants/Styles';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
-import { seedUtils } from '@waves/waves-transactions';
 import 'react-native-get-random-values';
 
+import { seedToAddress } from '@/components/utils/Transactions';
 import useConfig from '@/hooks/useConfig';
 import { getStringAsync } from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -40,15 +40,17 @@ export default function Recovery() {
     };
 
     const proceed = () => {
-        const address = new seedUtils.Seed(value).address;
-        const seed = value;
+        if (!isValid) return;
 
-        config.account.seed = seed;
+        const address = seedToAddress(value);
+
+        config.account.seed = value;
         config.account.address = address;
+        config.account.active = true;
         config.save();
 
         router.dismissAll();
-        router.replace('/base');
+        router.replace('/index');
     };
 
     useEffect(() => {

@@ -37,7 +37,7 @@ export default function LogoutSubmit() {
         Transactions.logOut(config, cache).then((res) => {
             if (res) {
                 router.dismissAll();
-                router.replace('/base');
+                router.replace('/index');
             }
         });
     };

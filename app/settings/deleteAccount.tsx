@@ -1,20 +1,27 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Header } from "@/components/ui/Header";
-import Image from "@/components/ui/Image";
-import { Colors } from "@/constants/Colors";
-import { global } from "@/constants/Styles";
-import useLang from "@/hooks/useLang";
-import useTheme from "@/hooks/useTheme";
-import { useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Header } from '@/components/ui/Header';
+import Image from '@/components/ui/Image';
+import { logOut } from '@/components/utils/Transactions';
+import { Colors } from '@/constants/Colors';
+import { global } from '@/constants/Styles';
+import useCache from '@/hooks/useCache';
+import useConfig from '@/hooks/useConfig';
+import useLang from '@/hooks/useLang';
+import useTheme from '@/hooks/useTheme';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const check = require("../../assets/images/icons/check.svg");
-const warn = require("../../assets/images/warning.svg");
-const warnDark = require("../../assets/images/warning-dark.svg");
+const check = require('../../assets/images/icons/check.svg');
+const warn = require('../../assets/images/warning.svg');
+const warnDark = require('../../assets/images/warning-dark.svg');
 
 export default function DeleteAccount() {
+    const config = useConfig();
+    const cache = useCache();
+    const router = useRouter();
     const { f } = useLang();
     const { color, theme } = useTheme();
 
@@ -24,21 +31,27 @@ export default function DeleteAccount() {
         setConfirm(!confirm);
     };
 
+    const proceed = () => {
+        logOut(config, cache);
+        router.dismissAll();
+        router.replace('/index');
+    };
+
     return (
         <>
-            <Header title={f("back")} />
+            <Header title={f('back')} />
             <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
-                <ThemedView style={[global.container, { width: "100%" }]}>
+                <ThemedView style={[global.container, { width: '100%' }]}>
                     <Image
-                        source={theme === "dark" ? warnDark : warn}
+                        source={theme === 'dark' ? warnDark : warn}
                         style={style.img}
                     />
-                    <ThemedText style={style.text}>{f("deleteAccountMsg")}</ThemedText>
+                    <ThemedText style={style.text}>{f('deleteAccountMsg')}</ThemedText>
                     <TouchableOpacity
                         style={[style.btn, { backgroundColor: color(confirm ? 0 : 3), borderColor: color(!confirm ? 0 : 3) }]}
                         onPress={accept}
                     >
-                        {!confirm && <ThemedText style={{ color: Colors.dark[1], fontFamily: "PoppinsBold" }}>OK</ThemedText>}
+                        {!confirm && <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>OK</ThemedText>}
                         {confirm && (
                             <Image
                                 source={check}
@@ -47,8 +60,11 @@ export default function DeleteAccount() {
                         )}
                     </TouchableOpacity>
                 </ThemedView>
-                <TouchableOpacity style={[style.btn, { backgroundColor: color(confirm ? 5 : 2) }]}>
-                    <ThemedText style={{ color: Colors.dark[1], fontFamily: "PoppinsBold" }}>{f("deleteAccount")}</ThemedText>
+                <TouchableOpacity
+                    style={[style.btn, { backgroundColor: color(confirm ? 5 : 2) }]}
+                    onPress={proceed}
+                >
+                    <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>{f('deleteAccount')}</ThemedText>
                 </TouchableOpacity>
             </SafeAreaView>
         </>
@@ -57,33 +73,33 @@ export default function DeleteAccount() {
 
 const style = StyleSheet.create({
     img: {
-        width: "50%",
+        width: '50%',
         aspectRatio: 1
     },
     check: {
-        height: "60%",
+        height: '60%',
         aspectRatio: 1
     },
     text: {
-        fontFamily: "PoppinsMedium",
-        width: "70%",
-        textAlign: "center",
+        fontFamily: 'PoppinsMedium',
+        width: '70%',
+        textAlign: 'center',
         fontSize: 18
     },
     btn: {
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
 
         marginVertical: 5,
-        marginTop: "15%",
+        marginTop: '15%',
         borderRadius: 30,
-        width: "80%",
+        width: '80%',
         height: 50,
 
-        borderColor: "#0000",
+        borderColor: '#0000',
         borderWidth: 2,
-        borderStyle: "solid"
+        borderStyle: 'solid'
     }
 });

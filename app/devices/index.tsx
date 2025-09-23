@@ -46,12 +46,12 @@ export default function Devices() {
                         onPress={goToScanner}
                         style={{ aspectRatio: 1, width: '15%', margin: 20 }}
                     >
-                        <Image source={theme === 'dark' ? qr : qrDark} />
+                        <Image source={theme === 'dark' ? qrDark : qr} />
                     </TouchableOpacity>
                 }
             />
             <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
-                <ScrollView>
+                <ScrollView contentContainerStyle={{ alignItems: 'center' }}>
                     {cache.data.devices.map((device, idx) => (
                         <DeviceEntry
                             key={idx}
@@ -95,7 +95,12 @@ function DeviceEntry({ device }: { device: Device }) {
                         <Image source={info} />
                     </TouchableOpacity>
                 </ThemedView>
-                <ThemedText style={s.deviceCategory}>{device.description}</ThemedText>
+                <ThemedText
+                    style={s.deviceCategory}
+                    numberOfLines={1}
+                >
+                    {device.description}
+                </ThemedText>
                 <CopyField
                     style={{ width: '70%', marginHorizontal: '3%', margin: '2%' }}
                     value={device.address}
@@ -131,7 +136,7 @@ const s = StyleSheet.create({
         marginHorizontal: 10,
         margin: 10,
 
-        width: '90%',
+        width: '95%',
         elevation: 5
     },
     infobar: {

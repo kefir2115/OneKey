@@ -5,8 +5,10 @@ import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
 import Segments from '@/components/ui/Segments';
 import { Device } from '@/components/utils/Api';
+import { add, remove } from '@/components/utils/Shortcut';
 import { global } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
+import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
 import { setStringAsync } from 'expo-clipboard';
@@ -15,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Map, { Marker } from 'react-native-maps';
-import { Card, List } from 'react-native-paper';
+import { Card, List, Portal, Snackbar } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -47,6 +49,7 @@ const pinCurrent = require('../../assets/images/icons/pin-0.png');
 
 export default function Info() {
     const { f } = useLang();
+    const config = useConfig();
     const cache = useCache();
     const router = useRouter();
     const [scene, setScene] = useState(0);
@@ -55,11 +58,19 @@ export default function Info() {
     const props = useLocalSearchParams();
     const { width } = useWindowDimensions();
 
+    const [snack, setSnack] = useState<[boolean, string]>([false, '']);
     const [dev, setDev] = useState<Device | undefined>(undefined);
+
+    const [isShortcut, setIsShortcut] = useState(false);
 
     useEffect(() => {
         setDev(cache.data.devices.filter((d) => d.address === props.address)[0]);
     }, [cache]);
+    useEffect(() => {
+        if (!dev) return;
+
+        setIsShortcut(config.shortcuts.find((s) => s.address === dev.address) !== undefined);
+    }, [dev]);
 
     const copySecret = () => {
         setStringAsync(props.secret as string);
@@ -73,6 +84,20 @@ export default function Info() {
                 address: dev.address
             }
         });
+    };
+
+    const toggleShortcut = () => {
+        if (!dev) return;
+
+        let status = false;
+        if (isShortcut) status = remove(dev, config);
+        else {
+            const addOperation = add(dev, config);
+            status = addOperation[0];
+        }
+
+        setSnack([true, f(status ? 'operationSuccess' : 'operationFail')]);
+        setIsShortcut(config.shortcuts.find((s) => s.address === dev.address) !== undefined);
     };
 
     if (!dev) return <View></View>;
@@ -113,7 +138,7 @@ export default function Info() {
                                 <QRCode
                                     size={width / 1.75}
                                     quietZone={width / 50}
-                                    value={(dev.address as string) || 'NO-' + Math.random()}
+                                    value={`https://www.caruma.io/iot/${dev.address}`}
                                 />
                             </View>
                             <TouchableOpacity
@@ -210,17 +235,29 @@ export default function Info() {
                 {scene === 2 && (
                     <Card style={[bonus.card, { backgroundColor: color(0) }]}>
                         <Card.Content>
-                            <TouchableOpacity style={bonus.btn}>
+                            <TouchableOpacity
+                                style={bonus.btn}
+                                onPress={toggleShortcut}
+                            >
                                 <Image
                                     source={theme === 'light' ? open : openDark}
                                     style={bonus.img}
                                 />
-                                <ThemedText style={bonus.text}>{f('addShortcut')}</ThemedText>
+                                <ThemedText style={bonus.text}>{f(isShortcut ? 'remShortcut' : 'addShortcut')}</ThemedText>
                             </TouchableOpacity>
                         </Card.Content>
                     </Card>
                 )}
             </SafeAreaView>
+            <Portal>
+                <Snackbar
+                    duration={2000}
+                    visible={snack[0]}
+                    onDismiss={() => setSnack([false, snack[1]])}
+                >
+                    {snack[1]}
+                </Snackbar>
+            </Portal>
         </GestureHandlerRootView>
     );
 }

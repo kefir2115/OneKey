@@ -1,5 +1,7 @@
 import { Cache } from '@/hooks/useCache';
 import { Config } from '@/hooks/useConfig';
+import * as Crypto from '@waves/ts-lib-crypto';
+import * as Transactions from '@waves/waves-transactions';
 import { broadcast, IInvokeScriptParams, invokeScript } from '@waves/waves-transactions';
 import { Device } from './Api';
 
@@ -74,8 +76,23 @@ export const openDevice = async (device: Device, config: Config, cache: Cache, c
     }
 };
 
-export async function getAddressStatus(address: string) {}
-export async function deleteAddress(address: string) {}
+export function seedToAddress(seed: string): string {
+    const key = Crypto.publicKey(seed);
+    return Crypto.address({ publicKey: key }, CHAIN_ID);
+}
+export async function verifyUser(config: Config): Promise<boolean> {
+    const key = Crypto.publicKey(config.account.seed);
+    const auth = Transactions.auth(
+        {
+            host: NODE_URL,
+            data: '',
+            publicKey: key
+        },
+        config.account.seed,
+        CHAIN_ID
+    );
+    return auth.address === config.account.address;
+}
 export async function logOut(config: Config, cache: Cache): Promise<boolean> {
     try {
         config.account = {};

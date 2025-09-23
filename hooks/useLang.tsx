@@ -62,6 +62,7 @@ export class Lang {
     deviceType = '';
     deviceModel = '';
     addShortcut = '';
+    remShortcut = '';
 
     welcome1 = '';
     welcome2 = '';
@@ -86,6 +87,19 @@ export class Lang {
     tutorial3 = '';
     tutorial4 = '';
     tutorial5 = '';
+    tutorialClick = '';
+
+    noDevices = '';
+
+    invalidQR = '';
+    invalidAddr1 = '';
+    invalidAddr2 = '';
+    invalidAddr3 = '';
+
+    close = '';
+
+    operationSuccess = '';
+    operationFail = '';
 
     constructor(l: Lang) {
         this.changeSelf(l);
@@ -161,6 +175,7 @@ const LANG = {
         deviceType: 'Type',
         deviceModel: 'Model',
         addShortcut: 'Add shortcut',
+        remShortcut: 'Remove shortcut',
 
         welcome1: 'If you already have an account and recovery',
         welcome2: 'phrase - press "Import account".',
@@ -184,7 +199,20 @@ const LANG = {
         tutorial2: 'Press this button show device details',
         tutorial3: 'You can scroll this list to see more devices',
         tutorial4: 'Press the key or title to open device list',
-        tutorial5: 'Widgets are located in upper area'
+        tutorial5: 'Widgets are located in upper area',
+        tutorialClick: 'Click anywhere to continue...',
+
+        noDevices: 'No devices found!',
+
+        invalidQR: 'Invalid QR code!',
+        invalidAddr1: 'You scanned invalid address!',
+        invalidAddr2: 'If you believe this is an error,',
+        invalidAddr3: 'please contact with administrator',
+
+        close: 'Close',
+
+        operationSuccess: 'Operation successfull',
+        operationFail: 'Operation failed'
     } as Lang),
     pl: new Lang({
         gates: 'Dostępne wejścia',
@@ -248,6 +276,7 @@ const LANG = {
         deviceType: 'Typ',
         deviceModel: 'Model',
         addShortcut: 'Dodaj skrót',
+        remShortcut: 'Usuń skrót',
 
         welcome1: 'Jeżeli posiadasz już konto i frazę',
         welcome2: 'odzyskiwania - naciśni "Importuj konto".',
@@ -271,7 +300,20 @@ const LANG = {
         tutorial2: 'Wciśnij ten przycisk, aby zobaczyć szczegóły urządzenia',
         tutorial3: 'Możesz przewijać tę listę, aby zobaczyć więcej urządzeń',
         tutorial4: 'Wciśnij klucz lub tytuł, aby otworzyć listę urządzeń',
-        tutorial5: 'Widżety znajdują się w górnej części ekranu'
+        tutorial5: 'Widżety znajdują się w górnej części ekranu',
+        tutorialClick: 'Kliknij aby kontynuować...',
+
+        noDevices: 'Nie znaleziono urządzeń!',
+
+        invalidQR: 'Nieprawidłowy kod QR!',
+        invalidAddr1: 'Zeskanowany kod QR jest nieprawidłowy!',
+        invalidAddr2: 'Jeżeli uważasz że to błąd,',
+        invalidAddr3: 'skontaktuj się z administratorem',
+
+        close: 'Zamknij',
+
+        operationSuccess: 'Operacja powiodła się',
+        operationFail: 'Operacja nie powiodła się'
     } as Lang)
 };
 

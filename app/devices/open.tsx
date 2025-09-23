@@ -23,18 +23,11 @@ export default function Open() {
     useEffect(() => {
         if (device === undefined) return;
 
-        openDevice(device, config, cache, (s) => {
-            if (s)
-                router.replace({
-                    pathname: '/map',
-                    params: { opened: 'true' }
-                });
-            else {
-                router.replace({
-                    pathname: '/map',
-                    params: { opened: 'false' }
-                });
-            }
+        openDevice(device, config, cache, (result) => {
+            router.replace({
+                pathname: '/map',
+                params: { opened: result ? 'true' : 'false' }
+            });
         });
     }, [device]);
 

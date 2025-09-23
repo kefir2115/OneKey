@@ -30,20 +30,13 @@ export default function RootLayout() {
 
     useEffect(() => {
         if (loaded) {
-            SplashScreen.hide();
+            SplashScreen.hideAsync();
         }
     }, [loaded]);
 
     if (!loaded) {
         return null;
     }
-    /**
-     * TODO: transactions
-     * create address?
-     * verify user async after start
-     * account recovery
-     * delete address
-     */
 
     const def = {
         lineHeight: 20,
@@ -97,7 +90,7 @@ export default function RootLayout() {
                         >
                             <Stack>
                                 <Stack.Screen
-                                    name="base"
+                                    name="index"
                                     options={{ headerShown: false }}
                                 />
                                 <Stack.Screen

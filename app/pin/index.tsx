@@ -7,7 +7,6 @@ import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
 import { FontAwesome } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
 import * as Crypto from 'expo-crypto';
 import { authenticateAsync } from 'expo-local-authentication';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -23,7 +22,6 @@ const COLOR = '#858FAB';
 export default function Pin() {
     const { f } = useLang();
     const config = useConfig();
-    const route = useRoute();
     const router = useRouter();
     const params = useLocalSearchParams();
     const prevPin = params.pin ? (params.pin as string).split(',') : [];
@@ -54,7 +52,7 @@ export default function Pin() {
                     config.save();
 
                     router.replace({
-                        pathname: (params.next as any) || '/base',
+                        pathname: (params.next as any) || '/index',
                         params: params
                     });
                 });
@@ -75,7 +73,7 @@ export default function Pin() {
                 Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nums.join(',')).then((sha) => {
                     if (config.pin === sha)
                         router.replace({
-                            pathname: (params.next as any) || '/base',
+                            pathname: (params.next as any) || '/index',
                             params: params
                         });
                     else {
@@ -98,7 +96,7 @@ export default function Pin() {
         authenticateAsync().then((r) => {
             if (r.success) {
                 router.replace({
-                    pathname: (params.next as any) || '/base',
+                    pathname: (params.next as any) || '/index',
                     params: params
                 });
             }

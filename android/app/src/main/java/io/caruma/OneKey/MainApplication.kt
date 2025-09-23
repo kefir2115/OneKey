@@ -1,4 +1,4 @@
-package com.anonymous.OneKey
+package io.caruma.OneKey
 
 import android.app.Application
 import android.content.res.Configuration
