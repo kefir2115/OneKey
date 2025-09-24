@@ -1,5 +1,6 @@
 import { Config } from '@/hooks/useConfig';
 import { LocationObject } from 'expo-location';
+import { getDistance } from 'geolib';
 
 const GRAPH_URL = 'https://v4.data-service.skey.network/graphql';
 const HEADERS = {
@@ -59,17 +60,22 @@ export interface Key {
 }
 
 export function getDevices(org: Organisation, loc: LocationObject, callback?: (devices: Device[]) => void) {
+    const nearestOnly = false;
     ping(
         GRAPH_URL,
         'POST',
         `{
-            devices(geoSearchCircle: {
+            devices(${
+                nearestOnly
+                    ? `geoSearchCircle: {
                 center: {
                     lat: ${loc.coords.latitude}
                     lng: ${loc.coords.longitude}
                 },
                 radius: 1050
-            }, keysOwner: "${org.address}") {
+            }, `
+                    : ''
+            }keysOwner: "${org.address}") {
                 objects {
                     address name owner lat lng visible active connected description supplier distance
                     details {
@@ -88,6 +94,20 @@ export function getDevices(org: Organisation, loc: LocationObject, callback?: (d
         .then((e) => e.json())
         .then((e: any) => {
             const devices: Device[] = e['data']['devices']['objects'];
+            if (!nearestOnly) {
+                devices.forEach((dev) => {
+                    dev.distance = getDistance(
+                        {
+                            lat: loc.coords.latitude,
+                            lon: loc.coords.longitude
+                        },
+                        {
+                            lat: dev.lat,
+                            lon: dev.lng
+                        }
+                    );
+                });
+            }
 
             if (callback)
                 callback(

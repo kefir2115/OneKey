@@ -1,3 +1,4 @@
+import { ExternalLink } from '@/components/ExternalLink';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/ui/Header';
@@ -25,7 +26,7 @@ export default function Settings() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const { color, theme } = useTheme();
-    const [darkMode, setDarkMode] = useState(config.theme === 0);
+    // const [darkMode, setDarkMode] = useState(config.theme === 0);
     const [expertMode, setExpertMode] = useState(false);
     const [bioAuth, setBioAuth] = useState(config.biometric);
     const [snackBar, setSnackBar] = useState(false);
@@ -37,16 +38,18 @@ export default function Settings() {
         }
     }, [params]);
 
-    const toggleDarkMode = () => {
-        config.theme = darkMode ? 1 : 0;
-        config.save();
+    // const toggleDarkMode = () => {
+    //     config.theme = darkMode ? 1 : 0;
+    //     config.save();
 
-        setDarkMode(!darkMode);
-    };
+    //     setDarkMode(!darkMode);
+    // };
+
     const toggleExpertMode = () => setExpertMode(!expertMode);
     const toggleBioAuth = () => {
-        config.biometric = bioAuth;
+        config.biometric = !bioAuth;
         config.save();
+
         setBioAuth(!bioAuth);
     };
 
@@ -120,6 +123,22 @@ export default function Settings() {
                             right={() => Arrow()}
                         />
                         <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
+                        <ExternalLink
+                            href={`http://caruma.io/downloads/Terms_And_Conditions_Caruma_${config.language === 'en' ? 'En' : 'Pl'}.pdf`}
+                        >
+                            <Item
+                                style={{ width: '100%' }}
+                                title={f('tos')}
+                                right={() => Arrow()}
+                            />
+                        </ExternalLink>
+                        <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
+                        <Item
+                            title={f('deleteAccount')}
+                            right={() => Arrow()}
+                            onClick={goToRemoveAccount}
+                        />
+                        <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
                         {/* <Item
                             title={f("darkMode")}
                             right={() => (
@@ -162,11 +181,6 @@ export default function Settings() {
                                 />
                             )}
                         />
-                        <Item
-                            title={f('deleteAccount')}
-                            right={() => Arrow()}
-                            onClick={goToRemoveAccount}
-                        />
                         {expertMode && (
                             <>
                                 <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
@@ -177,7 +191,7 @@ export default function Settings() {
                                 />
                                 <ThemedText>{f('installId')}</ThemedText>
                                 <CopyField
-                                    value={'abcd'}
+                                    value={process.env.EXPO_PUBLIC_BUILD_VERSION as string}
                                     copy={copyClipboard}
                                 />
                             </>

@@ -34,7 +34,7 @@ export default function DeleteAccount() {
     const proceed = () => {
         logOut(config, cache);
         router.dismissAll();
-        router.replace('/index');
+        router.replace('/');
     };
 
     return (

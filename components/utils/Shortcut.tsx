@@ -25,7 +25,7 @@ export function remove(device: Device, config: Config): boolean {
     return false;
 }
 
-function update(config: Config) {
+export function update(config: Config) {
     QuickActions.setItems(
         config.shortcuts.map((d) => {
             return {

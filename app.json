@@ -4,15 +4,23 @@
     "slug": "OneKey",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon-resized.png",
     "scheme": "onekey",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "config": {
+        "googleMapsApiKey":  "process.env.GOOGLE_MAPS_API_KEY"
+      },
       "supportsTablet": true,
       "bundleIdentifier": "io.caruma.OneKey"
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#333"
@@ -38,12 +46,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo-0.png",
+          "image": "./assets/images/splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#F5F5F8",
           "dark": {
-            "image": "./assets/images/logo-0-dark.png",
+            "image": "./assets/images/splash-dark.png",
             "backgroundColor": "#333333"
           }
         }
@@ -59,7 +67,6 @@
       ],
       "expo-local-authentication",
       "expo-quick-actions",
-      "expo-maps",
       "expo-localization"
     ],
     "experiments": {

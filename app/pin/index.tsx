@@ -52,7 +52,7 @@ export default function Pin() {
                     config.save();
 
                     router.replace({
-                        pathname: (params.next as any) || '/index',
+                        pathname: (params.next as any) || '/',
                         params: params
                     });
                 });
@@ -73,7 +73,7 @@ export default function Pin() {
                 Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nums.join(',')).then((sha) => {
                     if (config.pin === sha)
                         router.replace({
-                            pathname: (params.next as any) || '/index',
+                            pathname: (params.next as any) || '/',
                             params: params
                         });
                     else {
@@ -96,7 +96,7 @@ export default function Pin() {
         authenticateAsync().then((r) => {
             if (r.success) {
                 router.replace({
-                    pathname: (params.next as any) || '/index',
+                    pathname: (params.next as any) || '/',
                     params: params
                 });
             }
@@ -104,7 +104,7 @@ export default function Pin() {
     };
 
     const createButton = (value: string, n: number) => {
-        if ((value === 'arrow' && nums.length === 0) || (value === 'finger' && config.pin.length === 0))
+        if ((value === 'arrow' && nums.length === 0) || (value === 'finger' && (!config.biometric || config.pin.length === 0)))
             return (
                 <View
                     key={Math.random()}

@@ -2,49 +2,124 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+## How to install
 
 1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
 2. Start the app
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npx expo start
+```
+## Before building
+
+> Modify the .env file field `GOOGLE_MAPS_API_KEY` and provide Google API key
+
+> Execute
+> ```bash
+> npx expo prebuild -c
+> ``` 
+
+## How to build
+
+Android:
+```bash
+npx eas build --platform android
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+IOS:
+```bash
+npx eas build --platform ios
+```
 
-## Learn more
+## Config file (user device)
+```JSON
+{
+   "language": "en", // en for english or pl for polish
+   "theme": 0, // 0-1 corresponds for light-dark
+   "pin": "", // secured user pin used to auth
+   "biometric": true, // should user be prompted to use fingerprint
+   "account": {
+      "address": "", // user wallet address
+      "seed": "", // user seed
+      "active": false // whether account is active
+   },
+   "shortcuts": [] // app icon list of devices
+}
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Cache file (user device)
+```JSON
+{
+   "devices": [], // Device list
+   "orgs": [], // Organisations list
+   "keys": [] // Keys list (unused)
+}
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Schemas
 
-## Join the community
+Device
+```JSON
+{
+    "active": boolean,
+    "address": string,
+    "connected": boolean,
+    "description": string,
+    "details": {
+       "additionalDescription": string,
+       "assetUrl": string,
+       "deviceModel": string,
+       "deviceType": string,
+       "physicalAddress": {
+           "addressLine1": string,
+           "addressLine2": string,
+           "city": string,
+           "country": string,
+           "floor": string,
+           "postcode": string
+       }
+    },
+    "distance": number,
+    "lat": number,
+    "lng": number,
+    "name": string,
+    "owner": string,
+    "visible": boolean,
+    "supplier": string,
+    "key": {
+        "assetId": string,
+        "owner": string
+    }
+}
+```
 
-Join our community of developers creating universal apps.
+Organisation
+```JSON
+{
+    "address": string,
+    "name": string,
+    "description": string,
+    "users": string[],
+    "suppliers": {
+        "objects": {
+           "address": string
+        }[]
+    }
+}
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Key
+```JSON
+{
+    "assetId": string,
+    "owner": string,
+    "supplier": {
+        "address": string
+    }
+}
+```

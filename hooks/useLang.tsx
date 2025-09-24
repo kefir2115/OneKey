@@ -100,6 +100,7 @@ export class Lang {
 
     operationSuccess = '';
     operationFail = '';
+    tos = '';
 
     constructor(l: Lang) {
         this.changeSelf(l);
@@ -212,7 +213,9 @@ const LANG = {
         close: 'Close',
 
         operationSuccess: 'Operation successfull',
-        operationFail: 'Operation failed'
+        operationFail: 'Operation failed',
+
+        tos: 'Privacy policy'
     } as Lang),
     pl: new Lang({
         gates: 'Dostępne wejścia',
@@ -313,7 +316,9 @@ const LANG = {
         close: 'Zamknij',
 
         operationSuccess: 'Operacja powiodła się',
-        operationFail: 'Operacja nie powiodła się'
+        operationFail: 'Operacja nie powiodła się',
+
+        tos: 'Polityka prywatności'
     } as Lang)
 };
 

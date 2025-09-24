@@ -22,7 +22,7 @@ export default function NotFound() {
             <ThemedText style={s.title}>{f('pageDontExist')}</ThemedText>
             <Button
                 style={s.btn}
-                onClick={() => nav.replace('/index')}
+                onClick={() => nav.replace('/')}
             >
                 Go back
             </Button>

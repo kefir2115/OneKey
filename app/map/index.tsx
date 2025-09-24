@@ -3,25 +3,18 @@ import { ThemedView } from '@/components/ThemedView';
 import Image from '@/components/ui/Image';
 import { Device, getDevices, getOrganisations } from '@/components/utils/Api';
 import Path from '@/components/utils/PathUtils';
+import { distance } from '@/components/utils/Utils';
 import { global, mapDark, mapLight } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { randomUUID } from 'expo-crypto';
+import { FlashList } from '@shopify/flash-list';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-    ListRenderItemInfo,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    StyleSheet,
-    TouchableOpacity,
-    useWindowDimensions,
-    View
-} from 'react-native';
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapView, { Marker } from 'react-native-maps';
 import { Button, Card, Modal, Portal, Searchbar, Snackbar } from 'react-native-paper';
@@ -79,13 +72,13 @@ export default function Map() {
 
     const mapRef = useRef<MapView>(null);
     const bottomSheet = useRef<BottomSheet>(null);
-    const flatRef = useRef<FlatList>(null);
+    const flatRef = useRef<FlatList<Device>>(null);
 
-    const { width, height } = useWindowDimensions();
+    const { width, height } = Dimensions.get('screen');
 
-    const ITEM_WIDTH = width * 0.9;
+    const ITEM_WIDTH = width;
 
-    const snaps = useMemo(() => ['10%', '40%'], []);
+    const snaps = useMemo(() => ['15%', '40%'], []);
 
     useEffect(() => {
         if (props.tutorial && tutorial.step === -1) nextTutorial();
@@ -123,9 +116,13 @@ export default function Map() {
     }, []);
 
     useEffect(() => {
+        pointToPin();
+    }, [currentPin, props]);
+
+    function pointToPin() {
         const device = devices[currentPin];
         if (devices.length > currentPin && snapCause !== 'list') {
-            flatRef.current?.scrollToIndex({ index: currentPin, animated: true, viewPosition: 0.5 });
+            flatRef.current?.scrollToOffset({ offset: width * currentPin, animated: true });
         }
         mapRef.current?.animateToRegion(
             {
@@ -136,7 +133,7 @@ export default function Map() {
             },
             500
         );
-    }, [currentPin]);
+    }
 
     function loadInfo() {
         if (loc !== undefined)
@@ -154,7 +151,7 @@ export default function Map() {
 
                 getDevices(org, loc, (list) => {
                     if (list.length === 0) return;
-                    setDevices(list);
+                    setDevices([...list]);
 
                     cache.data.devices = list;
                     cache.save();
@@ -234,14 +231,14 @@ export default function Map() {
 
         switch (tutorial.step + 1) {
             case 0: {
-                path = new Path(width, height).getRoundRect(0, height - height * 0.1, width, height * 0.1, 20);
+                path = new Path(width, height).getRoundRect(0, height - height * 0.2, width, height * 0.2, 20);
                 text = f('tutorial1');
-                y = height - height * 0.1 - 40;
+                y = height - height * 0.25 - 40;
                 break;
             }
             case 1: {
                 bottomSheet.current?.snapToIndex(1);
-                path = new Path(width, height).getCircle(width - width * 0.22, height - height * 0.21, 30);
+                path = new Path(width, height).getCircle(width - width * 0.12, height - height * 0.21, 30);
                 text = f('tutorial2');
                 y = height - height * 0.3 - 40;
                 break;
@@ -281,6 +278,7 @@ export default function Map() {
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: color(0) }}>
             {loc !== undefined && (
                 <MapView
+                    provider="google"
                     loadingEnabled
                     loadingBackgroundColor={color(0)}
                     loadingIndicatorColor={color(1)}
@@ -309,7 +307,7 @@ export default function Map() {
                 >
                     {devices.map((device, idx) => (
                         <Marker
-                            key={'marker' + idx}
+                            key={`marker ${idx}`}
                             coordinate={{ latitude: device.lat, longitude: device.lng }}
                             image={currentPin === idx ? markerCurrent : marker}
                             onSelect={() => {
@@ -420,30 +418,21 @@ export default function Map() {
                             style={style.list}
                         />
                     </TouchableOpacity>
-                    {devices.length !== 0 && (
-                        <FlatList
-                            horizontal
-                            style={{ marginBottom: '15%', height: '100%' }}
-                            data={devices}
-                            ref={flatRef}
-                            onScroll={(ev) => {
-                                setSnapCause('list');
-                                onScroll(ev);
-                            }}
-                            snapToInterval={ITEM_WIDTH}
-                            pagingEnabled
-                            renderItem={(e: ListRenderItemInfo<any>) => {
-                                return (
-                                    <ItemEntry
-                                        device={e.item}
-                                        key={e.index}
-                                    />
-                                );
-                            }}
-                            keyExtractor={(i: any) => randomUUID()}
-                            nestedScrollEnabled
-                        />
-                    )}
+                    <FlatList
+                        horizontal={true}
+                        style={{ marginBottom: '5%', height: '100%' }}
+                        data={devices}
+                        ref={flatRef}
+                        onScroll={(ev) => {
+                            setSnapCause('list');
+                            onScroll(ev);
+                        }}
+                        snapToInterval={ITEM_WIDTH}
+                        renderItem={({ item, index }) => <ItemEntry device={item} />}
+                        keyExtractor={(item) => item.address}
+                        nestedScrollEnabled
+                        pagingEnabled
+                    />
                     {devices.length === 0 && (
                         <View style={nodevices.container}>
                             <Image
@@ -461,7 +450,7 @@ export default function Map() {
                         <ThemedText style={{ textAlign: 'center' }}>{f('results', search)}</ThemedText>
                         {results.length > 0 && (
                             <GestureHandlerRootView>
-                                <FlatList
+                                <FlashList
                                     data={devices}
                                     keyExtractor={(it, i) => String(i)}
                                     renderItem={(e) => {
@@ -536,28 +525,32 @@ export default function Map() {
             {tutorial.step >= 0 && (
                 <Portal>
                     <TouchableOpacity
-                        style={[StyleSheet.absoluteFill]}
+                        style={{ width: '100%', height: '100%' }}
                         onPress={nextTutorial}
                     >
                         <Svg
-                            width={width}
-                            height={height}
+                            width={'100%'}
+                            height={'100%'}
                         >
                             <PathView
                                 d={tutorial.path}
-                                fill="#0000008f"
+                                fill="#000000a6"
                                 fillRule="evenodd"
                             />
                         </Svg>
                     </TouchableOpacity>
                     <ThemedText
-                        style={{ position: 'absolute', top: tutorial.text.y, left: tutorial.text.x, textAlign: 'center', width: '100%' }}
+                        style={[
+                            {
+                                top: tutorial.text.y,
+                                left: tutorial.text.x
+                            },
+                            style.tutorialStep
+                        ]}
                     >
                         {tutorial.text.value}
                     </ThemedText>
-                    <ThemedText style={{ position: 'absolute', top: '50%', textAlign: 'center', width: '100%', opacity: 0.7 }}>
-                        {f('tutorialClick')}
-                    </ThemedText>
+                    <ThemedText style={[style.tutorialClick]}>{f('tutorialClick')}</ThemedText>
                 </Portal>
             )}
         </GestureHandlerRootView>
@@ -567,6 +560,7 @@ export default function Map() {
 const ItemEntry = ({ device, onClick, ...rest }: { device: Device; onClick?: () => void }) => {
     const { f } = useLang();
     const { color } = useTheme();
+    const { width } = Dimensions.get('screen');
     const router = useRouter();
 
     const openDeviceInfo = () => {
@@ -591,12 +585,12 @@ const ItemEntry = ({ device, onClick, ...rest }: { device: Device; onClick?: () 
 
     return (
         <Card
-            style={[{ backgroundColor: color(0) }, card.container]}
+            style={[{ backgroundColor: color(0), width: width * 0.9 }, card.container]}
             {...rest}
         >
             <Card.Content>
                 <ThemedView style={card.header}>
-                    <ThemedText style={card.distance}>{device.distance.toFixed(1)}m</ThemedText>
+                    <ThemedText style={card.distance}>{distance(device.distance)}</ThemedText>
                     <TouchableOpacity onPress={() => openDeviceInfo()}>
                         <Image
                             source={info}
@@ -611,7 +605,12 @@ const ItemEntry = ({ device, onClick, ...rest }: { device: Device; onClick?: () 
                 </ThemedText>
             </Card.Content>
             <Card.Actions>
-                <Button onPress={openDoor}>{f('open')}</Button>
+                <Button
+                    onPress={openDoor}
+                    textColor={color(1)}
+                >
+                    {f('open')}
+                </Button>
             </Card.Actions>
         </Card>
     );
@@ -696,6 +695,20 @@ const style = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: '5%'
+    },
+    tutorialClick: {
+        position: 'absolute',
+        top: '50%',
+        textAlign: 'center',
+        width: '100%',
+        opacity: 0.7,
+        color: '#fff'
+    },
+    tutorialStep: {
+        position: 'absolute',
+        textAlign: 'center',
+        width: '100%',
+        color: '#fff'
     }
 });
 const border = StyleSheet.create({

@@ -3,6 +3,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
 import { Device } from '@/components/utils/Api';
+import { distance } from '@/components/utils/Utils';
 import { global } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useLang from '@/hooks/useLang';
@@ -118,7 +119,7 @@ function DeviceEntry({ device }: { device: Device }) {
                     </ThemedText>
                 </ThemedView>
                 <ThemedView style={[{ backgroundColor: color(4) }, s.deviceDistance]}>
-                    <ThemedText style={s.distanceInside}>{device.distance.toFixed(1)}m</ThemedText>
+                    <ThemedText style={s.distanceInside}>{distance(device.distance)}</ThemedText>
                 </ThemedView>
             </ThemedView>
         </ThemedView>

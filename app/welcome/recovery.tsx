@@ -50,7 +50,7 @@ export default function Recovery() {
         config.save();
 
         router.dismissAll();
-        router.replace('/index');
+        router.replace('/');
     };
 
     useEffect(() => {

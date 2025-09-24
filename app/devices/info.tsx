@@ -6,7 +6,8 @@ import Image from '@/components/ui/Image';
 import Segments from '@/components/ui/Segments';
 import { Device } from '@/components/utils/Api';
 import { add, remove } from '@/components/utils/Shortcut';
-import { global } from '@/constants/Styles';
+import { distance } from '@/components/utils/Utils';
+import { global, mapDark, mapLight } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
@@ -175,24 +176,25 @@ export default function Info() {
                                         {f(Boolean(dev.active) ? 'statusActive' : 'statusDisconnected')}
                                     </ThemedText>
                                 </ThemedView>
-                                <ThemedText style={map.distance}>{dev.distance.toFixed(1)}m</ThemedText>
+                                <ThemedText style={map.distance}>{distance(dev.distance)}</ThemedText>
                             </Card.Content>
-                            <Map
-                                style={map.map}
-                                initialRegion={{
-                                    latitude: dev.lat,
-                                    longitude: dev.lng,
-                                    latitudeDelta: 0.005,
-                                    longitudeDelta: 0.005
-                                }}
-                            >
-                                <Marker
-                                    coordinate={{ latitude: dev.lat, longitude: dev.lng }}
-                                    key={0}
-                                    title={dev.name || f('gateFallback')}
-                                    image={pinCurrent}
-                                />
-                            </Map>
+                            <View style={map.mapWrapper}>
+                                <Map
+                                    style={map.map}
+                                    region={{
+                                        latitude: dev.lat,
+                                        longitude: dev.lng,
+                                        latitudeDelta: 0.005,
+                                        longitudeDelta: 0.005
+                                    }}
+                                    customMapStyle={theme === 'dark' ? mapDark : mapLight}
+                                >
+                                    <Marker
+                                        coordinate={{ latitude: dev.lat, longitude: dev.lng }}
+                                        image={pinCurrent}
+                                    />
+                                </Map>
+                            </View>
                             <ThemedText style={{ textAlign: 'right', fontFamily: 'PoppinsLight' }}>
                                 {dev.details.physicalAddress.addressLine1 + ' ' + dev.details.physicalAddress.addressLine2 ||
                                     f('addressFallback')}{' '}
@@ -353,8 +355,14 @@ const map = StyleSheet.create({
         elevation: 5,
         marginTop: '5%'
     },
-    map: {
+    mapWrapper: {
+        borderRadius: 25,
+        overflow: 'hidden',
         width: '90%',
+        aspectRatio: 1
+    },
+    map: {
+        width: '100%',
         aspectRatio: 1
     }
 });
