@@ -4,6 +4,7 @@ import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
 import { Device } from '@/components/utils/Api';
 import { distance } from '@/components/utils/Utils';
+import { check, idle, info, qr, qrDark, xmark } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useLang from '@/hooks/useLang';
@@ -12,22 +13,7 @@ import { setStringAsync } from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CopyField } from '../settings';
-
-// const back = require("../../assets/images/icons/back.svg");
-
-const info = require('../../assets/images/icons/info.svg');
-
-const qr = require('../../assets/images/icons/qr.svg');
-const qrDark = require('../../assets/images/icons/qr-dark.svg');
-
-// const copy = require("../../assets/images/icons/copy.svg");
-// const copyDark = require("../../assets/images/icons/copy-dark.svg");
-
-const active = require('../../assets/images/icons/check.svg');
-const disconnected = require('../../assets/images/icons/xmark.svg');
-const idle = require('../../assets/images/icons/idle.svg');
-const inactive = require('../../assets/images/icons/key-inactive.svg');
+import CopyField from '../settings/items/CopyField';
 
 export default function Devices() {
     const router = useRouter();
@@ -51,7 +37,7 @@ export default function Devices() {
                     </TouchableOpacity>
                 }
             />
-            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
+            <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
                 <ScrollView contentContainerStyle={{ alignItems: 'center' }}>
                     {cache.data.devices.map((device, idx) => (
                         <DeviceEntry
@@ -66,7 +52,7 @@ export default function Devices() {
 }
 
 function DeviceEntry({ device }: { device: Device }) {
-    const { f } = useLang();
+    const { t } = useLang();
     const router = useRouter();
     const { color, theme } = useTheme();
 
@@ -109,16 +95,16 @@ function DeviceEntry({ device }: { device: Device }) {
                 />
             </ThemedView>
             <ThemedView style={{ width: '40%' }}>
-                <ThemedView style={[s.deviceStatusBox, { backgroundColor: color(3) }]}>
+                <ThemedView style={[s.deviceStatusBox, { backgroundColor: color.green }]}>
                     <Image
                         style={{ aspectRatio: 1, width: '18%', marginHorizontal: 5 }}
-                        source={device.connected ? active : device.active ? idle : disconnected}
+                        source={device.connected ? check : device.active ? idle : xmark}
                     />
                     <ThemedText style={s.deviceStatus}>
-                        {device.connected ? f('statusActive') : device.active ? f('statusInactive') : f('statusDisconnected')}
+                        {device.connected ? t('statusActive') : device.active ? t('statusInactive') : t('statusDisconnected')}
                     </ThemedText>
                 </ThemedView>
-                <ThemedView style={[{ backgroundColor: color(4) }, s.deviceDistance]}>
+                <ThemedView style={[{ backgroundColor: color.blue }, s.deviceDistance]}>
                     <ThemedText style={s.distanceInside}>{distance(device.distance)}</ThemedText>
                 </ThemedView>
             </ThemedView>

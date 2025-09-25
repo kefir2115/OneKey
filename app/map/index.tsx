@@ -1,57 +1,47 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import Image from '@/components/ui/Image';
 import { Device, getDevices, getOrganisations } from '@/components/utils/Api';
-import Path from '@/components/utils/PathUtils';
-import { distance } from '@/components/utils/Utils';
+import {
+    check,
+    navigation,
+    navigationDark,
+    navigationOn,
+    navigationOnDark,
+    pin0,
+    pin1,
+    qr,
+    qrDark,
+    settings,
+    settingsDark,
+    stack,
+    stackDark,
+    xmark
+} from '@/constants/Icons';
 import { global, mapDark, mapLight } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { FlashList } from '@shopify/flash-list';
+import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Dimensions, Keyboard, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapView, { Marker } from 'react-native-maps';
 import { Button, Card, Modal, Portal, Searchbar, Snackbar } from 'react-native-paper';
+import { IconSource } from 'react-native-paper/lib/typescript/components/Icon';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path as PathView } from 'react-native-svg';
-
-const map = require('../../assets/images/testmap.png');
-const info = require('../../assets/images/icons/info.svg');
-const xmark = require('../../assets/images/icons/xmark.svg');
-const check = require('../../assets/images/icons/check.svg');
-
-const qr = require('../../assets/images/icons/qr.svg');
-const qrDark = require('../../assets/images/icons/qr-dark.svg');
-
-const key = require('../../assets/images/icons/key.svg');
-const keyDark = require('../../assets/images/icons/key-dark.svg');
-
-const layers = require('../../assets/images/icons/stack.svg');
-const layersDark = require('../../assets/images/icons/stack-dark.svg');
-
-const setting = require('../../assets/images/icons/settings.svg');
-const settingDark = require('../../assets/images/icons/settings-dark.svg');
-
-const location = require('../../assets/images/icons/navigation.svg');
-const locationDark = require('../../assets/images/icons/navigation-dark.svg');
-const locationOn = require('../../assets/images/icons/navigation-on.svg');
-const locationOnDark = require('../../assets/images/icons/navigation-on-dark.svg');
-
-const marker = require('../../assets/images/icons/pin-1.png');
-const markerCurrent = require('../../assets/images/icons/pin-0.png');
+import BottomList from './items/BottomList';
+import SearchList from './items/SearchList';
+import Tutorial from './items/Tutorial';
 
 export default function Map() {
     const router = useRouter();
     const config = useConfig();
     const cache = useCache();
     const props = useLocalSearchParams();
-    const { f } = useLang();
+    const { t } = useLang();
     const { color, theme } = useTheme();
     const [snackOpen, setSnackOpen] = useState(props.opened !== undefined);
     const [loc, setLoc] = useState<Location.LocationObject | undefined>(undefined);
@@ -61,12 +51,9 @@ export default function Map() {
     const [currentPin, setCurrentPin] = useState(0);
     const [locStatus, setLocStatus] = useState(0);
     const [results, setResults] = useState<Device[]>([]);
-    const [tutorial, setTutorial] = useState<{ step: number; path: string; text: { value: string; x: number; y: number } }>({
-        step: -1,
-        path: '',
-        text: { value: '', x: 0, y: 0 }
-    });
+    const [tutorialStep, setTutorialStep] = useState(-1);
     const [snapCause, setSnapCause] = useState<'map' | 'list' | null>(null);
+    const [searchFocus, setSearchFocus] = useState(false);
 
     const [devices, setDevices] = useState(cache.data.devices);
 
@@ -75,13 +62,10 @@ export default function Map() {
     const flatRef = useRef<FlatList<Device>>(null);
 
     const { width, height } = Dimensions.get('screen');
-
     const ITEM_WIDTH = width;
 
-    const snaps = useMemo(() => ['15%', '40%'], []);
-
     useEffect(() => {
-        if (props.tutorial && tutorial.step === -1) nextTutorial();
+        if (props.tutorial && tutorialStep === -1) nextTutorial();
         if (loc === undefined) return;
 
         loadInfo();
@@ -120,6 +104,8 @@ export default function Map() {
     }, [currentPin, props]);
 
     function pointToPin() {
+        if (devices.length === 0) return;
+
         const device = devices[currentPin];
         if (devices.length > currentPin && snapCause !== 'list') {
             flatRef.current?.scrollToOffset({ offset: width * currentPin, animated: true });
@@ -177,6 +163,16 @@ export default function Map() {
             });
     }
 
+    const requestLocation = () => {
+        Location.requestForegroundPermissionsAsync().then((e) => {
+            if (e.granted) {
+                setLocationModal(false);
+                setLocStatus(0);
+                getLoc(true);
+            }
+        });
+    };
+
     const updateSearchBar = (str: string) => {
         setSearch(str);
 
@@ -206,14 +202,15 @@ export default function Map() {
         setSearch('');
     };
 
-    const requestLocation = () => {
-        Location.requestForegroundPermissionsAsync().then((e) => {
-            if (e.granted) {
-                setLocationModal(false);
-                setLocStatus(0);
-                getLoc(true);
-            }
-        });
+    const onSearchPress = () => {
+        setSearchFocus(true);
+    };
+    const onIconPress = () => {
+        if (!searchFocus) return;
+
+        setSearchFocus(false);
+        setSearch('');
+        Keyboard.dismiss();
     };
 
     const onScroll = (ev: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -224,64 +221,17 @@ export default function Map() {
     };
 
     const nextTutorial = () => {
-        let path = '',
-            text = '';
-        let x = 0,
-            y = 0;
-
-        switch (tutorial.step + 1) {
-            case 0: {
-                path = new Path(width, height).getRoundRect(0, height - height * 0.2, width, height * 0.2, 20);
-                text = f('tutorial1');
-                y = height - height * 0.25 - 40;
-                break;
-            }
-            case 1: {
-                bottomSheet.current?.snapToIndex(1);
-                path = new Path(width, height).getCircle(width - width * 0.12, height - height * 0.21, 30);
-                text = f('tutorial2');
-                y = height - height * 0.3 - 40;
-                break;
-            }
-            case 2: {
-                path = new Path(width, height).getRoundRect(0, height - height * 0.25, width, height * 0.2, 20);
-                text = f('tutorial3');
-                y = height - height * 0.3 - 40;
-                break;
-            }
-            case 3: {
-                path = new Path(width, height).getRoundRect(0, height - height * 0.35, width, height * 0.1, 20);
-                text = f('tutorial4');
-                y = height - height * 0.4 - 40;
-                break;
-            }
-            case 4: {
-                path = new Path(width, height).getRoundRect(0, 0, width, height * 0.4, 20);
-                text = f('tutorial5');
-                y = height * 0.45;
-                break;
-            }
-            default: {
-                router.dismissAll();
-                path = '';
-                text = '';
-                break;
-            }
-        }
-
-        setTutorial((prev) => {
-            return { ...{ step: tutorial.step + 1, path, text: { ...{ value: text, x, y } } } };
-        });
+        setTutorialStep(tutorialStep + 1);
     };
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: color(0) }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: color.background }}>
             {loc !== undefined && (
                 <MapView
                     provider="google"
                     loadingEnabled
-                    loadingBackgroundColor={color(0)}
-                    loadingIndicatorColor={color(1)}
+                    loadingBackgroundColor={color.background}
+                    loadingIndicatorColor={color.font}
                     initialRegion={
                         devices[currentPin]
                             ? {
@@ -309,7 +259,7 @@ export default function Map() {
                         <Marker
                             key={`marker ${idx}`}
                             coordinate={{ latitude: device.lat, longitude: device.lng }}
-                            image={currentPin === idx ? markerCurrent : marker}
+                            image={currentPin === idx ? pin0 : pin1}
                             onSelect={() => {
                                 setSnapCause('map');
                                 setCurrentPin(idx);
@@ -331,18 +281,21 @@ export default function Map() {
                     <Searchbar
                         value={search}
                         onChangeText={updateSearchBar}
-                        style={[style.searchBox, { backgroundColor: color(0) }]}
-                        inputStyle={{ color: color(1) }}
-                        cursorColor={color(4)}
-                        placeholder={f('search')}
-                        placeholderTextColor={color(1) + 'aa'}
-                        iconColor={color(1)}
+                        style={[style.searchBox, { backgroundColor: color.background }]}
+                        inputStyle={{ color: color.font }}
+                        cursorColor={color.blue}
+                        placeholder={t('search')}
+                        placeholderTextColor={color.font + 'aa'}
+                        iconColor={color.font}
+                        icon={searchFocus ? ('arrow-left' as IconSource) : undefined}
+                        onIconPress={() => onIconPress()}
+                        onPress={() => onSearchPress()}
                     />
                     <TouchableOpacity
                         style={{ width: 50, aspectRatio: 1 }}
                         onPress={goToSettings}
                     >
-                        <Image source={theme === 'light' ? setting : settingDark} />
+                        <Image source={theme === 'light' ? settings : settingsDark} />
                     </TouchableOpacity>
                 </View>
                 <View
@@ -353,7 +306,7 @@ export default function Map() {
                         style={[style.rightImg]}
                         onPress={() => setSatelite((s) => !s)}
                     >
-                        <Image source={theme === 'light' ? layers : layersDark} />
+                        <Image source={theme === 'light' ? stack : stackDark} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[style.rightImg]}
@@ -371,11 +324,13 @@ export default function Map() {
                             style={style.popupLocation}
                             key={'popup'}
                         >
-                            <ThemedText style={[{ fontSize: 12, backgroundColor: color(0), padding: 5 }]}>{f('actionRequired')}</ThemedText>
+                            <ThemedText style={[{ fontSize: 12, backgroundColor: color.background, padding: 5 }]}>
+                                {t('actionRequired')}
+                            </ThemedText>
                         </ThemedText>
                     )}
                     <TouchableOpacity
-                        style={[style.rightImg, loc ? border.use : null, { borderColor: color(4) }]}
+                        style={[style.rightImg, loc ? border.use : null, { borderColor: color.blue }]}
                         onPress={openLocationPrompt}
                         key={'locbtn'}
                     >
@@ -384,105 +339,37 @@ export default function Map() {
                             source={
                                 locStatus === 0
                                     ? theme === 'light'
-                                        ? locationOn
-                                        : locationOnDark
+                                        ? navigationOn
+                                        : navigationOnDark
                                     : theme === 'light'
-                                    ? location
-                                    : locationDark
+                                    ? navigation
+                                    : navigationDark
                             }
                         />
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
-            <BottomSheet
-                index={0}
-                snapPoints={snaps}
-                ref={bottomSheet}
-                style={{ borderRadius: 20 }}
-                handleIndicatorStyle={{ backgroundColor: color(3) + 'aa' }}
-                overDragResistanceFactor={0}
-                enablePanDownToClose={false}
-                enableContentPanningGesture={false}
-                enableHandlePanningGesture={true}
-                animateOnMount={true}
-                backgroundStyle={{ backgroundColor: color(0), pointerEvents: 'none' }}
-            >
-                <BottomSheetView>
-                    <TouchableOpacity
-                        style={style.bottomHeader}
-                        onPress={openKeyList}
-                    >
-                        <ThemedText style={style.cardTitle}>{f('gates')}</ThemedText>
-                        <Image
-                            source={theme === 'light' ? key : keyDark}
-                            style={style.list}
-                        />
-                    </TouchableOpacity>
-                    <FlatList
-                        horizontal={true}
-                        style={{ marginBottom: '5%', height: '100%' }}
-                        data={devices}
-                        ref={flatRef}
-                        onScroll={(ev) => {
-                            setSnapCause('list');
-                            onScroll(ev);
-                        }}
-                        snapToInterval={ITEM_WIDTH}
-                        renderItem={({ item, index }) => <ItemEntry device={item} />}
-                        keyExtractor={(item) => item.address}
-                        nestedScrollEnabled
-                        pagingEnabled
-                    />
-                    {devices.length === 0 && (
-                        <View style={nodevices.container}>
-                            <Image
-                                source={xmark}
-                                style={nodevices.icon}
-                            />
-                            <ThemedText style={nodevices.message}>{f('noDevices')}</ThemedText>
-                        </View>
-                    )}
-                </BottomSheetView>
-            </BottomSheet>
+            {!searchFocus && (
+                <BottomList
+                    devices={devices}
+                    bottomSheetRef={bottomSheet}
+                    flatRef={flatRef}
+                    openKeyList={openKeyList}
+                    onScroll={(ev) => {
+                        setSnapCause('list');
+                        onScroll(ev);
+                    }}
+                />
+            )}
             {search.length > 0 && (
-                <Portal>
-                    <ThemedView style={{ flex: 1, marginTop: '40%' }}>
-                        <ThemedText style={{ textAlign: 'center' }}>{f('results', search)}</ThemedText>
-                        {results.length > 0 && (
-                            <GestureHandlerRootView>
-                                <FlashList
-                                    data={devices}
-                                    keyExtractor={(it, i) => String(i)}
-                                    renderItem={(e) => {
-                                        if (results.includes(e.item))
-                                            return (
-                                                <ItemEntry
-                                                    device={e.item}
-                                                    key={e.index}
-                                                    onClick={() => {
-                                                        setResults([]);
-                                                        setSearch('');
-                                                    }}
-                                                />
-                                            );
-                                        return null;
-                                    }}
-                                />
-                            </GestureHandlerRootView>
-                        )}
-                        {results.length === 0 && (
-                            <ThemedView style={{ alignSelf: 'center', alignItems: 'center', marginTop: '20%' }}>
-                                <ThemedText style={{ textAlign: 'center', fontSize: 20, fontFamily: 'PoppinsBold' }}>
-                                    {f('noResults')}
-                                </ThemedText>
-                                <Image
-                                    source={xmark}
-                                    style={{ width: '20%', aspectRatio: 1 }}
-                                />
-                            </ThemedView>
-                        )}
-                    </ThemedView>
-                </Portal>
+                <SearchList
+                    search={search}
+                    onClick={() => {
+                        setResults([]);
+                        setSearch('');
+                    }}
+                    results={results}
+                />
             )}
             <Portal>
                 <Modal
@@ -490,157 +377,51 @@ export default function Map() {
                     onDismiss={() => setLocationModal(false)}
                 >
                     {locStatus === 1 && (
-                        <Card style={{ backgroundColor: color(0), borderRadius: 20 }}>
+                        <Card style={{ backgroundColor: color.background, borderRadius: 20 }}>
                             <Card.Content>
-                                <ThemedText>{f('noService')}</ThemedText>
+                                <ThemedText>{t('noService')}</ThemedText>
                             </Card.Content>
                         </Card>
                     )}
                     {locStatus === 2 && (
-                        <Card style={{ backgroundColor: color(0), borderRadius: 20 }}>
+                        <Card style={{ backgroundColor: color.background, borderRadius: 20 }}>
                             <Card.Content>
-                                <ThemedText>{f('noPermission')}</ThemedText>
+                                <ThemedText>{t('noPermission')}</ThemedText>
                             </Card.Content>
                             <Card.Actions>
-                                <Button onPress={requestLocation}>{f('allow')}</Button>
+                                <Button onPress={requestLocation}>{t('allow')}</Button>
                             </Card.Actions>
                         </Card>
                     )}
                 </Modal>
+            </Portal>
+            <Portal>
                 <Snackbar
                     onDismiss={() => setSnackOpen(false)}
                     visible={snackOpen}
                     duration={3000}
-                    style={[{ backgroundColor: color(0), borderWidth: 1 }, { borderColor: props.opened === 'true' ? '#0f0' : '#f00' }]}
+                    style={[
+                        { backgroundColor: color.background, borderWidth: 1 },
+                        { borderColor: props.opened === 'true' ? '#0f0' : '#f00' }
+                    ]}
                 >
                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                         <Image
                             source={props.opened === 'true' ? check : xmark}
                             style={{ height: 20, aspectRatio: 1, margin: 5 }}
                         />
-                        <ThemedText>{f(props.opened === 'true' ? 'gateOpenSuccess' : 'gateOpenFail')}</ThemedText>
+                        <ThemedText>{t(props.opened === 'true' ? 'gateOpenSuccess' : 'gateOpenFail')}</ThemedText>
                     </View>
                 </Snackbar>
             </Portal>
-            {tutorial.step >= 0 && (
-                <Portal>
-                    <TouchableOpacity
-                        style={{ width: '100%', height: '100%' }}
-                        onPress={nextTutorial}
-                    >
-                        <Svg
-                            width={'100%'}
-                            height={'100%'}
-                        >
-                            <PathView
-                                d={tutorial.path}
-                                fill="#000000a6"
-                                fillRule="evenodd"
-                            />
-                        </Svg>
-                    </TouchableOpacity>
-                    <ThemedText
-                        style={[
-                            {
-                                top: tutorial.text.y,
-                                left: tutorial.text.x
-                            },
-                            style.tutorialStep
-                        ]}
-                    >
-                        {tutorial.text.value}
-                    </ThemedText>
-                    <ThemedText style={[style.tutorialClick]}>{f('tutorialClick')}</ThemedText>
-                </Portal>
-            )}
+            <Tutorial
+                step={tutorialStep}
+                nextStep={nextTutorial}
+                bottomSheetRef={bottomSheet}
+            />
         </GestureHandlerRootView>
     );
 }
-
-const ItemEntry = ({ device, onClick, ...rest }: { device: Device; onClick?: () => void }) => {
-    const { f } = useLang();
-    const { color } = useTheme();
-    const { width } = Dimensions.get('screen');
-    const router = useRouter();
-
-    const openDeviceInfo = () => {
-        onClick?.();
-        router.navigate({
-            pathname: '/devices/info',
-            params: {
-                address: device.address
-            }
-        });
-    };
-
-    const openDoor = () => {
-        onClick?.();
-        router.replace({
-            pathname: '/devices/open',
-            params: {
-                address: device.address
-            }
-        });
-    };
-
-    return (
-        <Card
-            style={[{ backgroundColor: color(0), width: width * 0.9 }, card.container]}
-            {...rest}
-        >
-            <Card.Content>
-                <ThemedView style={card.header}>
-                    <ThemedText style={card.distance}>{distance(device.distance)}</ThemedText>
-                    <TouchableOpacity onPress={() => openDeviceInfo()}>
-                        <Image
-                            source={info}
-                            style={card.img}
-                        />
-                    </TouchableOpacity>
-                </ThemedView>
-                <ThemedText style={card.name}>{device.name}</ThemedText>
-                <ThemedText style={card.location}>
-                    {device.details.physicalAddress.addressLine1} {device.details.physicalAddress.addressLine2}
-                    {device.details.physicalAddress.postcode} {device.details.physicalAddress.city}
-                </ThemedText>
-            </Card.Content>
-            <Card.Actions>
-                <Button
-                    onPress={openDoor}
-                    textColor={color(1)}
-                >
-                    {f('open')}
-                </Button>
-            </Card.Actions>
-        </Card>
-    );
-};
-
-const card = StyleSheet.create({
-    container: {
-        margin: 20,
-        borderRadius: 20
-    },
-    header: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-    },
-    distance: {
-        fontFamily: 'PoppinsBold',
-        fontSize: 20
-    },
-    img: {
-        width: 30,
-        aspectRatio: 1
-    },
-    name: {
-        fontFamily: 'PoppinsMedium',
-        fontSize: 18
-    },
-    location: {}
-});
 
 const style = StyleSheet.create({
     topbar: {
@@ -653,12 +434,6 @@ const style = StyleSheet.create({
     searchBox: {
         margin: '5%',
         width: '75%'
-    },
-    cardTitle: {
-        fontSize: 24,
-        lineHeight: 30,
-        fontFamily: 'PoppinsMedium',
-        margin: 10
     },
     bar: {
         display: 'flex',
@@ -684,31 +459,6 @@ const style = StyleSheet.create({
         marginRight: '10%',
         padding: 20,
         overflow: 'hidden'
-    },
-    list: {
-        width: 30,
-        aspectRatio: 1
-    },
-    bottomHeader: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: '5%'
-    },
-    tutorialClick: {
-        position: 'absolute',
-        top: '50%',
-        textAlign: 'center',
-        width: '100%',
-        opacity: 0.7,
-        color: '#fff'
-    },
-    tutorialStep: {
-        position: 'absolute',
-        textAlign: 'center',
-        width: '100%',
-        color: '#fff'
     }
 });
 const border = StyleSheet.create({
@@ -716,24 +466,5 @@ const border = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'solid',
         borderRadius: 100
-    }
-});
-const nodevices = StyleSheet.create({
-    container: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        marginTop: '10%'
-    },
-    icon: {
-        width: '20%',
-        aspectRatio: 1
-    },
-    message: {
-        fontSize: 18,
-        lineHeight: 24,
-        fontFamily: 'PoppinsMedium'
     }
 });

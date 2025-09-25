@@ -2,6 +2,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
+import { adjustColor } from '@/components/utils/Utils';
+import { check, copy, copyDark } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
@@ -12,16 +14,10 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const online = require('../../assets/images/icons/check.svg');
-const offline = require('../../assets/images/icons/xmark.svg');
-
-const copyl = require('../../assets/images/icons/copy.svg');
-const copyDark = require('../../assets/images/icons/copy-dark.svg');
-
 export default function Organisations() {
     const cache = useCache();
     const config = useConfig();
-    const { f } = useLang();
+    const { t } = useLang();
     const { color } = useTheme();
 
     const [selected, setSelected] = useState<number>(0);
@@ -42,9 +38,9 @@ export default function Organisations() {
 
     return (
         <>
-            <Header title={f('back')} />
-            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
-                <ThemedText style={item.title}>{f('organisations')}</ThemedText>
+            <Header title={t('back')} />
+            <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
+                <ThemedText style={item.title}>{t('organisations')}</ThemedText>
                 <ScrollView style={{ marginTop: 20, flex: 1 }}>
                     {cache.data.orgs
                         .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
@@ -67,16 +63,16 @@ export default function Organisations() {
 }
 
 function Organisation({ status, name, secret }: { status: 'on' | 'off'; name: string; secret: string }) {
-    const { theme } = useTheme();
+    const { theme, color } = useTheme();
 
-    const copy = () => {
+    const copyAddress = () => {
         setStringAsync(secret);
     };
 
     return (
-        <ThemedView style={item.container}>
+        <ThemedView style={[item.container, { backgroundColor: adjustColor(color.background, 5) }]}>
             <Image
-                source={status === 'on' ? online : null}
+                source={status === 'on' ? check : null}
                 style={item.status}
             />
             <ThemedText
@@ -86,7 +82,7 @@ function Organisation({ status, name, secret }: { status: 'on' | 'off'; name: st
                 {name || '-'}
             </ThemedText>
             <TouchableOpacity
-                onPress={copy}
+                onPress={copyAddress}
                 style={item.btn}
             >
                 <ThemedText
@@ -96,7 +92,7 @@ function Organisation({ status, name, secret }: { status: 'on' | 'off'; name: st
                     {secret}
                 </ThemedText>
                 <Image
-                    source={theme === 'light' ? copyl : copyDark}
+                    source={theme === 'light' ? copy : copyDark}
                     style={item.copy}
                 />
             </TouchableOpacity>

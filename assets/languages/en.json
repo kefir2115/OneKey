@@ -1,0 +1,101 @@
+{
+    "gates": "Available gates",
+    "open": "Open",
+    "noService": "Looks like you have your location service disabled. It is required for app to work correctly.",
+    "noPermission": "You have to allow to use your location in order for app to work correctly.",
+    "search": "Search gates",
+    "allow": "Allow",
+    "noResults": "No results!",
+    "results": "Search results for \"%s\"",
+    "actionRequired": "Action required!",
+
+    "qrScan": "Scan the QR code!",
+
+    "loading": "Loading...",
+    "back": "Back",
+    "backToMap": "Back to map",
+
+    "pinInsert": "insert pin",
+    "pinRepeat": "repeat pin",
+    "pinInvalid": "Invalid PIN",
+    "pinTries": "You have %s tries left.",
+
+    "deleteAccount": "Delete Account",
+    "deleteAccountMsg": "Account deletion is irreversible. You won't be able to open gates nor use this account.",
+
+    "appUse": "How to use app?",
+    "organisations": "List of available organisations",
+    "darkMode": "Dark mode",
+    "expertMode": "Expert mode",
+    "bioAuth": "Biometric authorization",
+
+    "accAddress": "Account address",
+    "installId": "Installation ID",
+    "showRecPhrase": "Show recovery phrase",
+    "logOut": "Log out",
+    "valueClipboard": "Copied to clipboard!",
+    "yourRecPhrase": "Your recovery phrase",
+    "copy": "Copy",
+
+    "logoutMsg": "Make sure you have a copy of your recovery phrases. You won't be able to log in without them.",
+
+    "activateMsg": "To activate your account, please go to an organisation employee and scan your QR code. After scanning press \"Activate\" button.",
+    "saveSeedMsg": "Save your seed in a safe place. Loosing it might cause problems with account recovery. You can also find it in settings after this step.",
+    "activate": "Activate",
+
+    "statusActive": "active",
+    "statusDisconnected": "disconnected",
+    "statusInactive": "inactive",
+    "statusKeyInactive": "key inactive",
+
+    "gateFallback": "Gate",
+    "descFallback": "No description",
+    "qrCode": "QR code",
+    "info": "Info",
+    "more": "More",
+    "addressFallback": "No address",
+    "device": "Device",
+    "deviceType": "Type",
+    "deviceModel": "Model",
+    "addShortcut": "Add shortcut",
+    "remShortcut": "Remove shortcut",
+
+    "welcome1": "If you already have an account and recovery",
+    "welcome2": "phrase - press \"Import account\".",
+    "welcome3": "Otherwise - \"Create account\"",
+    "importAccount": "Import account",
+    "createAccount": "Create account",
+
+    "recoveryMsg": "Insert recovery phrase and press \"Continue\"",
+    "phraseCorrectInfo": "Phrase is correct",
+    "phraseIncorrectInfo": "Phrase is incorrect",
+    "pasteClipboard": "Paste from clipboard",
+    "continue": "Continue",
+
+    "pageDontExist": "Looks like this page doesn't exist!",
+    "opening": "Opening...",
+
+    "gateOpenSuccess": "Gate opened successfully!",
+    "gateOpenFail": "Failed to open gate!",
+
+    "tutorial1": "Find devices by scrolling this element up",
+    "tutorial2": "Press this button show device details",
+    "tutorial3": "You can scroll this list to see more devices",
+    "tutorial4": "Press the key or title to open device list",
+    "tutorial5": "Widgets are located in upper area",
+    "tutorialClick": "Click anywhere to continue...",
+
+    "noDevices": "No devices found!",
+
+    "invalidQR": "Invalid QR code!",
+    "invalidAddr1": "You scanned invalid address!",
+    "invalidAddr2": "If you believe this is an error,",
+    "invalidAddr3": "please contact with administrator",
+
+    "close": "Close",
+
+    "operationSuccess": "Operation successfull",
+    "operationFail": "Operation failed",
+
+    "tos": "Privacy policy"
+}

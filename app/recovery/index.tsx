@@ -10,6 +10,7 @@ import useTheme from '@/hooks/useTheme';
 import 'react-native-get-random-values';
 
 import { seedToAddress } from '@/components/utils/Transactions';
+import { check, copy, copyDark, logo0, logo0Dark, xmark } from '@/constants/Icons';
 import useConfig from '@/hooks/useConfig';
 import { getStringAsync } from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -18,17 +19,8 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Button, Card } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const check = require('../../assets/images/icons/check.svg');
-const xmark = require('../../assets/images/icons/xmark.svg');
-
-const logo = require('../../assets/images/logo-0.svg');
-const logoDark = require('../../assets/images/logo-0-dark.svg');
-
-const copy = require('../../assets/images/icons/copy.svg');
-const copyDark = require('../../assets/images/icons/copy-dark.svg');
-
 export default function Recovery() {
-    const { f } = useLang();
+    const { t } = useLang();
     const { color, theme } = useTheme();
     const config = useConfig();
     const router = useRouter();
@@ -61,48 +53,48 @@ export default function Recovery() {
     return (
         <>
             <Header title="Back" />
-            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
+            <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
                 <Image
-                    source={theme === 'dark' ? logoDark : logo}
+                    source={theme === 'dark' ? logo0Dark : logo0}
                     style={style.logo}
                 />
-                <Card style={[style.card, { backgroundColor: color(0) }]}>
+                <Card style={[style.card, { backgroundColor: color.background }]}>
                     <Card.Content>
-                        <ThemedText>{f('recoveryMsg')}</ThemedText>
+                        <ThemedText>{t('recoveryMsg')}</ThemedText>
                         <TextArea
                             containerStyle={style.textArea}
-                            style={{ color: color(1) }}
+                            style={{ color: color.font }}
                             value={value}
                             onChangeText={setValue}
                         >
                             <TouchableOpacity
-                                style={[{ backgroundColor: color(2) }, style.clipBox]}
+                                style={[{ backgroundColor: color.lighterBackground }, style.clipBox]}
                                 onPress={setFromClipboard}
                             >
-                                <ThemedText style={style.clipText}>{f('pasteClipboard')}</ThemedText>
+                                <ThemedText style={style.clipText}>{t('pasteClipboard')}</ThemedText>
                                 <Image
                                     source={theme === 'dark' ? copyDark : copy}
                                     style={style.copyIcon}
                                 />
                             </TouchableOpacity>
                         </TextArea>
-                        <ThemedView style={[style.infoBox, { borderColor: isValid ? color(3) : '#ce7777ff' }]}>
+                        <ThemedView style={[style.infoBox, { borderColor: isValid ? color.green : '#ce7777ff' }]}>
                             <Image
                                 source={isValid ? check : xmark}
                                 style={style.info}
                             />
-                            <ThemedText style={style.infoText}>{f(isValid ? 'phraseCorrectInfo' : 'phraseIncorrectInfo')}</ThemedText>
+                            <ThemedText style={style.infoText}>{t(isValid ? 'phraseCorrectInfo' : 'phraseIncorrectInfo')}</ThemedText>
                         </ThemedView>
                     </Card.Content>
                     <Card.Actions>
                         <Button
                             mode="contained"
-                            style={{ backgroundColor: color(isValid ? 3 : 2) }}
+                            style={{ backgroundColor: isValid ? color.green : color.lighterBackground }}
                             labelStyle={{ fontFamily: 'PoppinsBold' }}
-                            textColor={isValid ? Colors.dark[1] : Colors.dark[0] + '9a'}
+                            textColor={isValid ? Colors.dark.font : Colors.dark.background + '9a'}
                             onPress={proceed}
                         >
-                            {f('continue')}
+                            {t('continue')}
                         </Button>
                     </Card.Actions>
                 </Card>

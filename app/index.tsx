@@ -1,13 +1,17 @@
 import { verifyUser } from '@/components/utils/Transactions';
 import useCache from '@/hooks/useCache';
 import useConfig, { Language } from '@/hooks/useConfig';
+import useTheme from '@/hooks/useTheme';
 import * as Localization from 'expo-localization';
+import * as NavigationBar from 'expo-navigation-bar';
 import * as QuickActions from 'expo-quick-actions';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import Loading from './loading';
 
 export default function Base() {
+    const { color, theme } = useTheme();
     const cache = useCache();
     const router = useRouter();
     const config = useConfig();
@@ -37,6 +41,10 @@ export default function Base() {
     };
 
     useEffect(() => {
+        if (Platform.OS === 'android') {
+            NavigationBar.setStyle('auto');
+        }
+
         detectLanguage();
         verify();
 

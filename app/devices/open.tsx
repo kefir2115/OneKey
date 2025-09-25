@@ -14,7 +14,7 @@ export default function Open() {
     const cache = useCache();
     const props = useLocalSearchParams();
     const [device, setDevice] = useState<Device | undefined>(undefined);
-    const { f } = useLang();
+    const { t } = useLang();
 
     useEffect(() => {
         setDevice(cache.data.devices.filter((d) => d.address === props.address)[0]);
@@ -35,7 +35,7 @@ export default function Open() {
 
     return (
         <Loading
-            subtitle={f('opening')}
+            subtitle={t('opening')}
             address={{
                 code: device.details.physicalAddress.city,
                 street: device.details.physicalAddress.addressLine1

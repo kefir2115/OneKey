@@ -2,24 +2,23 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import Button from '@/components/ui/Button';
 import Image from '@/components/ui/Image';
+import { xmark } from '@/constants/Icons';
 import useLang from '@/hooks/useLang';
 import { useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
-const image = require('../assets/images/icons/xmark.svg');
-
 export default function NotFound() {
-    const { f } = useLang();
+    const { t } = useLang();
     const nav = useRouter();
 
     return (
         <ThemedView style={s.view}>
             <Image
                 style={s.img}
-                source={image}
+                source={xmark}
                 alt="image not found"
             />
-            <ThemedText style={s.title}>{f('pageDontExist')}</ThemedText>
+            <ThemedText style={s.title}>{t('pageDontExist')}</ThemedText>
             <Button
                 style={s.btn}
                 onClick={() => nav.replace('/')}

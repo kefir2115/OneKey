@@ -1,18 +1,27 @@
+export interface Color {
+  background: string;
+  font: string;
+  lighterBackground: string;
+  green: string;
+  blue: string;
+  orange: string;
+}
+
 export const Colors = {
-  light: [
-    "#F5F5F8",
-    "#333333",
-    "#C8CCD9",
-    "#60A8AA",
-    "#59C9EB",
-    "#F99677",
-  ],
-  dark: [
-    "#333333",
-    "#F5F5F8",
-    "#5C5C5C",
-    "#3B7779",
-    "#3C9BB8",
-    "#D37A5E",
-  ]
-};
+  light: {
+    background: "#F5F5F8",
+    font: "#333333",
+    lighterBackground: "#C8CCD9",
+    green: "#60A8AA",
+    blue: "#59C9EB",
+    orange: "#F99677"
+  } as Color,
+  dark: {
+    background: "#333333",
+    font: "#F5F5F8",
+    lighterBackground: "#5C5C5C",
+    green: "#3B7779",
+    blue: "#3C9BB8",
+    orange: "#D37A5E"
+  } as Color
+}

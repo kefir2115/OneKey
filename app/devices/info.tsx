@@ -1,12 +1,12 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import Button from '@/components/ui/Button';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
 import Segments from '@/components/ui/Segments';
 import { Device } from '@/components/utils/Api';
 import { add, remove } from '@/components/utils/Shortcut';
-import { distance } from '@/components/utils/Utils';
+import { adjustColor, distance } from '@/components/utils/Utils';
+import { check, copy, copyDark, info, open, openDark, pin0, qr, qrDark, settings, settingsDark, stack, stackDark } from '@/constants/Icons';
 import { global, mapDark, mapLight } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
@@ -22,34 +22,8 @@ import { Card, List, Portal, Snackbar } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const info = require('../../assets/images/icons/info.svg');
-
-const open = require('../../assets/images/icons/open.svg');
-const openDark = require('../../assets/images/icons/open-dark.svg');
-
-const qrc = require('../../assets/images/icons/qr.svg');
-const qrDark = require('../../assets/images/icons/qr-dark.svg');
-
-const settings = require('../../assets/images/icons/settings.svg');
-const settingsDark = require('../../assets/images/icons/settings-dark.svg');
-
-const stack = require('../../assets/images/icons/stack.svg');
-const stackDark = require('../../assets/images/icons/stack-dark.svg');
-
-const check = require('../../assets/images/icons/check.svg');
-const maptest = require('../../assets/images/testmap.png');
-
-const more = require('../../assets/images/icons/more.svg');
-const moreDark = require('../../assets/images/icons/more-dark.svg');
-
-const copyl = require('../../assets/images/icons/copy.svg');
-const copyDark = require('../../assets/images/icons/copy-dark.svg');
-
-const pin = require('../../assets/images/icons/pin-1.png');
-const pinCurrent = require('../../assets/images/icons/pin-0.png');
-
 export default function Info() {
-    const { f } = useLang();
+    const { t } = useLang();
     const config = useConfig();
     const cache = useCache();
     const router = useRouter();
@@ -97,7 +71,7 @@ export default function Info() {
             status = addOperation[0];
         }
 
-        setSnack([true, f(status ? 'operationSuccess' : 'operationFail')]);
+        setSnack([true, t(status ? 'operationSuccess' : 'operationFail')]);
         setIsShortcut(config.shortcuts.find((s) => s.address === dev.address) !== undefined);
     };
 
@@ -106,17 +80,17 @@ export default function Info() {
     return (
         <GestureHandlerRootView>
             <Header title={'Back'} />
-            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
-                <ThemedText style={style.deviceName}>{dev.name || f('gateFallback')}</ThemedText>
-                <ThemedText style={[style.deviceName, style.deviceDesc]}>{dev.description || f('descFallback')}</ThemedText>
+            <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
+                <ThemedText style={style.deviceName}>{dev.name || t('gateFallback')}</ThemedText>
+                <ThemedText style={[style.deviceName, style.deviceDesc]}>{dev.description || t('descFallback')}</ThemedText>
                 <Segments
                     style={{ width: '90%' }}
                     value={scene}
-                    values={[f('qrCode'), f('info'), f('more')]}
+                    values={[t('qrCode'), t('info'), t('more')]}
                     icons={[
                         <Image
                             key={0}
-                            source={theme === 'light' ? qrc : qrDark}
+                            source={theme === 'light' ? qr : qrDark}
                             style={style.img}
                         />,
                         <Image
@@ -133,7 +107,7 @@ export default function Info() {
                     onChange={(idx) => setScene(idx)}
                 />
                 {scene === 0 && (
-                    <Card style={[qr.card, { backgroundColor: color(0) }]}>
+                    <Card style={[qrStyle.card, { backgroundColor: adjustColor(color.background, 10) }]}>
                         <Card.Content>
                             <View style={{ alignSelf: 'center' }}>
                                 <QRCode
@@ -144,17 +118,17 @@ export default function Info() {
                             </View>
                             <TouchableOpacity
                                 onPress={copySecret}
-                                style={qr.field}
+                                style={qrStyle.field}
                             >
                                 <ThemedText
-                                    style={qr.value}
+                                    style={qrStyle.value}
                                     numberOfLines={1}
                                 >
                                     {dev.address}
                                 </ThemedText>
                                 <Image
-                                    style={qr.img}
-                                    source={theme === 'light' ? copyl : copyDark}
+                                    style={qrStyle.img}
+                                    source={theme === 'light' ? copy : copyDark}
                                 />
                             </TouchableOpacity>
                         </Card.Content>
@@ -165,17 +139,17 @@ export default function Info() {
                         style={{ width: '100%' }}
                         contentContainerStyle={style.scroll}
                     >
-                        <Card style={[map.mapCard, { backgroundColor: color(0) }]}>
+                        <Card style={[map.mapCard, { backgroundColor: adjustColor(color.background, 10) }]}>
                             <Card.Content style={map.mapTop}>
-                                <ThemedView style={map.status}>
+                                <View style={map.status}>
                                     <Image
                                         source={check}
                                         style={map.statusImg}
                                     />
                                     <ThemedText style={map.statusText}>
-                                        {f(Boolean(dev.active) ? 'statusActive' : 'statusDisconnected')}
+                                        {t(Boolean(dev.active) ? 'statusActive' : 'statusDisconnected')}
                                     </ThemedText>
-                                </ThemedView>
+                                </View>
                                 <ThemedText style={map.distance}>{distance(dev.distance)}</ThemedText>
                             </Card.Content>
                             <View style={map.mapWrapper}>
@@ -191,42 +165,42 @@ export default function Info() {
                                 >
                                     <Marker
                                         coordinate={{ latitude: dev.lat, longitude: dev.lng }}
-                                        image={pinCurrent}
+                                        image={pin0}
                                     />
                                 </Map>
                             </View>
                             <ThemedText style={{ textAlign: 'right', fontFamily: 'PoppinsLight' }}>
                                 {dev.details.physicalAddress.addressLine1 + ' ' + dev.details.physicalAddress.addressLine2 ||
-                                    f('addressFallback')}{' '}
+                                    t('addressFallback')}{' '}
                                 {dev.details.physicalAddress.postcode || ''} {dev.details.physicalAddress.city}
                             </ThemedText>
                             <Card.Actions>
                                 <Button
-                                    style={{ backgroundColor: color(4) + 'aa' }}
+                                    style={{ backgroundColor: color.blue + 'aa' }}
                                     onClick={openDoor}
                                 >
-                                    {f('open')}
+                                    {t('open')}
                                 </Button>
                             </Card.Actions>
                         </Card>
-                        <Card style={[device.card, { backgroundColor: color(0) }]}>
+                        <Card style={[device.card, { backgroundColor: adjustColor(color.background, 5) }]}>
                             <Card.Content style={device.content}>
-                                <ThemedView style={device.top}>
+                                <View style={device.top}>
                                     <Image
                                         source={info}
                                         style={device.img}
                                     />
-                                    <ThemedText style={device.title}>{f('device')}</ThemedText>
-                                </ThemedView>
+                                    <ThemedText style={device.title}>{t('device')}</ThemedText>
+                                </View>
                                 <List.Section style={device.list}>
                                     <List.Item
-                                        titleStyle={{ color: color(1) }}
-                                        title={f('deviceType')}
+                                        titleStyle={{ color: color.font }}
+                                        title={t('deviceType')}
                                         right={() => <ThemedText>{dev.details.deviceType}</ThemedText>}
                                     />
                                     <List.Item
-                                        titleStyle={{ color: color(1) }}
-                                        title={f('deviceModel')}
+                                        titleStyle={{ color: color.font }}
+                                        title={t('deviceModel')}
                                         right={() => <ThemedText>{dev.details.deviceModel}</ThemedText>}
                                     />
                                 </List.Section>
@@ -235,17 +209,17 @@ export default function Info() {
                     </ScrollView>
                 )}
                 {scene === 2 && (
-                    <Card style={[bonus.card, { backgroundColor: color(0) }]}>
+                    <Card style={[bonus.card, { backgroundColor: adjustColor(color.background, 10) }]}>
                         <Card.Content>
                             <TouchableOpacity
-                                style={bonus.btn}
+                                style={[bonus.btn, { backgroundColor: adjustColor(color.background, 5) }]}
                                 onPress={toggleShortcut}
                             >
                                 <Image
                                     source={theme === 'light' ? open : openDark}
                                     style={bonus.img}
                                 />
-                                <ThemedText style={bonus.text}>{f(isShortcut ? 'remShortcut' : 'addShortcut')}</ThemedText>
+                                <ThemedText style={bonus.text}>{t(isShortcut ? 'remShortcut' : 'addShortcut')}</ThemedText>
                             </TouchableOpacity>
                         </Card.Content>
                     </Card>
@@ -264,7 +238,7 @@ export default function Info() {
     );
 }
 
-const qr = StyleSheet.create({
+const qrStyle = StyleSheet.create({
     card: {
         width: '90%',
         alignItems: 'center',

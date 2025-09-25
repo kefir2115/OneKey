@@ -16,7 +16,7 @@ import Svg, { Path as PathView } from 'react-native-svg';
 import Loading from '../loading';
 
 export default function Scanner() {
-    const { f } = useLang();
+    const { t } = useLang();
     const { color } = useTheme();
     const cache = useCache();
     const { width, height } = Dimensions.get('screen');
@@ -95,21 +95,21 @@ export default function Scanner() {
             </View>
             <SafeAreaView style={global.container}>
                 <HeaderTransparent title={'Back'} />
-                <ThemedText style={styles.text}>{f('qrScan')}</ThemedText>
+                <ThemedText style={styles.text}>{t('qrScan')}</ThemedText>
             </SafeAreaView>
             <Portal>
                 <Modal
                     visible={modal}
                     onDismiss={() => setModal(false)}
                 >
-                    <Card style={{ backgroundColor: color(0) }}>
+                    <Card style={{ backgroundColor: color.background }}>
                         <Card.Content>
-                            <ThemedText style={styles.line1}>{f('invalidAddr1')}</ThemedText>
-                            <ThemedText style={styles.line2}>{f('invalidAddr2')}</ThemedText>
-                            <ThemedText style={styles.line2}>{f('invalidAddr3')}</ThemedText>
+                            <ThemedText style={styles.line1}>{t('invalidAddr1')}</ThemedText>
+                            <ThemedText style={styles.line2}>{t('invalidAddr2')}</ThemedText>
+                            <ThemedText style={styles.line2}>{t('invalidAddr3')}</ThemedText>
                         </Card.Content>
                         <Card.Actions>
-                            <Button onClick={() => setModal(false)}>{f('close')}</Button>
+                            <Button onClick={() => setModal(false)}>{t('close')}</Button>
                         </Card.Actions>
                     </Card>
                 </Modal>

@@ -37,24 +37,31 @@ export class Config {
         });
     }
     load(callback?: (c: Config) => void) {
-        if (FILE.exists) {
-            const o = new Config(JSON.parse(FILE.textSync()));
+        try {
+            if (FILE.exists) {
+                const o = new Config(JSON.parse(FILE.textSync()));
 
-            this.language = o.language;
-            this.theme = o.theme;
-            this.pin = o.pin;
-            this.biometric = o.biometric;
-            this.account = o.account;
-            this.shortcuts = o.shortcuts;
+                this.language = o.language;
+                this.theme = o.theme;
+                this.pin = o.pin;
+                this.biometric = o.biometric;
+                this.account = o.account;
+                this.shortcuts = o.shortcuts;
+
+                this.loaded = true;
+
+                if (callback) callback(this);
+            } else {
+                this.loaded = true;
+                if (callback) callback(this);
+
+                return;
+            }
+        } catch (err) {
+            console.log(err);
 
             this.loaded = true;
-
             if (callback) callback(this);
-        } else {
-            this.loaded = true;
-            if (callback) callback(this);
-
-            return;
         }
     }
     save() {
@@ -71,11 +78,9 @@ export function ConfigProvider({ children }: ConfigProviderProps) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const cfg = new Config({ seed: '' });
-        cfg.load((loadedCfg) => {
-            const c = new Config(loadedCfg);
-            c.loaded = true;
-            setConfig(c);
+        const instance = new Config({ seed: '' });
+        instance.load((loadedCfg) => {
+            setConfig(loadedCfg);
             setLoading(false);
         });
     }, []);
@@ -87,14 +92,14 @@ export function ConfigProvider({ children }: ConfigProviderProps) {
     }, [config]);
 
     if (loading || !config) {
-        return null; // or a splash screen, loader, etc.
+        return null;
     }
 
     return <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>;
 }
 
 export default function useConfig() {
-    const c = useContext(ConfigContext);
-    if (!c) throw new Error('No config provider found!');
-    return c;
+    const context = useContext(ConfigContext);
+    if (!context) throw new Error('No config provider found!');
+    return context;
 }

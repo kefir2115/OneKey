@@ -20,10 +20,10 @@ export interface LoadingProps {
 }
 
 export default function Loading(prop: LoadingProps) {
-    const { f } = useLang();
+    const { t } = useLang();
     const { color } = useTheme();
     const props = useLocalSearchParams();
-    const [subtitle, setSubtitle] = useState(props.subtitle || prop.subtitle || f('loading'));
+    const [subtitle, setSubtitle] = useState(props.subtitle || prop.subtitle || t('loading'));
     const [address, setAddress] = useState<{ street: string; code: string } | null>(null);
 
     useEffect(() => {
@@ -36,7 +36,7 @@ export default function Loading(prop: LoadingProps) {
 
     return (
         <>
-            <SafeAreaView style={[global.container, { backgroundColor: color(0), width: '100%' }]}>
+            <SafeAreaView style={[global.container, { backgroundColor: color.background, width: '100%' }]}>
                 <View style={style.mid}>
                     <LottieView
                         source={loader}

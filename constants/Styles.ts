@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { ThemeProp } from "react-native-paper/lib/typescript/types";
 
 export const global = StyleSheet.create({
     container: {
@@ -205,3 +206,46 @@ export const mapLight = [
     ]
   }
 ]
+const def = {
+    lineHeight: 20,
+    fontFamily: 'PoppinsLight',
+    fontSize: 16
+};
+
+export const globalTheme: ThemeProp = {
+    dark: false,
+    mode: 'exact',
+    roundness: 15,
+    fonts: {
+        bodyLarge: def,
+        labelLarge: def,
+        titleLarge: def,
+        headlineLarge: def,
+
+        bodyMedium: def,
+        labelMedium: def,
+        titleMedium: def,
+        headlineMedium: def,
+
+        bodySmall: def,
+        labelSmall: def,
+        titleSmall: def,
+        headlineSmall: def,
+
+        default: {
+            fontFamily: 'PoppinsRegular'
+        },
+        thin: {
+            fontFamily: 'PoppinsThin'
+        },
+        light: {
+            fontFamily: 'PoppinsLight'
+        },
+        medium: {
+            fontFamily: 'PoppinsMedium'
+        },
+        regular: {
+            fontFamily: 'PoppinsRegular'
+        }
+    }
+}

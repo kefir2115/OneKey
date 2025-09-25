@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import Image from '@/components/ui/Image';
+import { landscape, landscapeDark, logo0, logo0Dark } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
@@ -13,17 +14,18 @@ import { Button } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Welcome() {
-    const { f } = useLang();
+    const { t } = useLang();
     const router = useRouter();
     const config = useConfig();
     const { color, theme } = useTheme();
-    const darkLogo = require(`../../assets/images/logo-0-dark.svg`);
-    const lightLogo = require(`../../assets/images/logo-0.svg`);
-    const darkLandscape = require(`../../assets/images/landscape-dark.svg`);
-    const lightLandscape = require(`../../assets/images/landscape.svg`);
 
     const goToImport = () => {
-        router.navigate('/welcome/recovery');
+        router.navigate({
+            pathname: '/pin',
+            params: {
+                next: '/recovery'
+            }
+        });
     };
     const goToCreate = () => {
         router.navigate({
@@ -44,38 +46,38 @@ export default function Welcome() {
     }, [config]);
 
     return (
-        <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
+        <SafeAreaView style={[{ backgroundColor: color.background }, global.container]}>
             <Image
                 style={s.logo}
-                source={theme === 'dark' ? darkLogo : lightLogo}
+                source={theme === 'dark' ? logo0Dark : logo0}
             />
             <Image
                 style={s.img}
-                source={theme === 'dark' ? darkLandscape : lightLandscape}
+                source={theme === 'dark' ? landscapeDark : landscape}
             />
 
             <ThemedView style={s.texts}>
-                <ThemedText style={s.text}>{f('welcome1')}</ThemedText>
-                <ThemedText style={s.text}>{f('welcome2')}</ThemedText>
-                <ThemedText style={s.text}>{f('welcome3')}</ThemedText>
+                <ThemedText style={s.text}>{t('welcome1')}</ThemedText>
+                <ThemedText style={s.text}>{t('welcome2')}</ThemedText>
+                <ThemedText style={s.text}>{t('welcome3')}</ThemedText>
             </ThemedView>
 
             <ThemedView style={s.buttons}>
                 <Button
                     mode="contained"
-                    buttonColor={color(3)}
+                    buttonColor={color.green}
                     style={s.btn}
                     onPress={goToImport}
                 >
-                    {f('importAccount')}
+                    {t('importAccount')}
                 </Button>
                 <Button
                     mode="contained"
-                    buttonColor={color(4)}
+                    buttonColor={color.blue}
                     style={s.btn}
                     onPress={goToCreate}
                 >
-                    {f('createAccount')}
+                    {t('createAccount')}
                 </Button>
             </ThemedView>
         </SafeAreaView>

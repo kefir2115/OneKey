@@ -1,9 +1,10 @@
-import { ExternalLink } from '@/components/ExternalLink';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
+import { adjustColor } from '@/components/utils/Utils';
 import { Colors } from '@/constants/Colors';
+import { copy, copyDark, lock } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
@@ -11,47 +12,31 @@ import useTheme from '@/hooks/useTheme';
 import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleProp, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
-import { Card, Divider, Modal, Portal, Snackbar, Switch } from 'react-native-paper';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Modal, Portal, Snackbar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const back = require('../../assets/images/icons/back.svg');
-const lock = require('../../assets/images/icons/lock.svg');
-const copyl = require('../../assets/images/icons/copy.svg');
-const copyDark = require('../../assets/images/icons/copy-dark.svg');
+import SwitchCard from './items/SwitchCard';
 
 export default function Settings() {
-    const { f } = useLang();
+    const { t } = useLang();
     const config = useConfig();
     const router = useRouter();
     const params = useLocalSearchParams();
     const { color, theme } = useTheme();
-    // const [darkMode, setDarkMode] = useState(config.theme === 0);
     const [expertMode, setExpertMode] = useState(false);
-    const [bioAuth, setBioAuth] = useState(config.biometric);
+    const [bioAuth] = useState(config.biometric);
     const [snackBar, setSnackBar] = useState(false);
     const [recovery, setRecovery] = useState(false);
 
     useEffect(() => {
         if (params.action === 'viewRecovery') {
             setRecovery(true);
+        } else if (params.action === 'toggleBioAuth') {
+            config.biometric = !bioAuth;
+            config.save();
+            router.replace('/settings');
         }
     }, [params]);
-
-    // const toggleDarkMode = () => {
-    //     config.theme = darkMode ? 1 : 0;
-    //     config.save();
-
-    //     setDarkMode(!darkMode);
-    // };
-
-    const toggleExpertMode = () => setExpertMode(!expertMode);
-    const toggleBioAuth = () => {
-        config.biometric = !bioAuth;
-        config.save();
-
-        setBioAuth(!bioAuth);
-    };
 
     const copyClipboard = (value: string) => {
         Clipboard.setStringAsync(config.account.seed).then(() => {
@@ -60,7 +45,7 @@ export default function Settings() {
     };
 
     const viewRecovery = () => {
-        router.replace({
+        router.navigate({
             pathname: '/pin',
             params: {
                 next: '/settings',
@@ -75,172 +60,65 @@ export default function Settings() {
         config.save();
         router.navigate('/settings/logoutSubmit');
     };
-    const goToOrgs = () => {
-        config.save();
-        router.navigate('/settings/organisations');
-    };
-    const goToRemoveAccount = () => {
-        config.save();
-        router.navigate('/settings/deleteAccount');
-    };
-    const goToTutorial = () => {
-        config.save();
-        router.navigate({
-            pathname: '/map',
-            params: {
-                tutorial: '1'
-            }
-        });
-    };
     const closePhrase = () => {
         setRecovery(false);
         router.replace('/settings');
     };
 
-    const containerStyle = { backgroundColor: color(0), padding: 20, borderRadius: 20, width: '80%', alignSelf: 'center' };
-    const Arrow = () => (
-        <Image
-            style={{ aspectRatio: 0.5, width: 10, margin: 20, transform: [{ rotate: '180deg' }] }}
-            source={back}
-        />
-    );
+    const containerStyle = { backgroundColor: color.background, padding: 20, borderRadius: 20, width: '80%', alignSelf: 'center' };
 
     return (
         <>
-            <Header title={f('backToMap')} />
-            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
-                <Card style={[styles.card, { backgroundColor: color(0) }]}>
-                    <Card.Content>
-                        <Item
-                            title={f('appUse')}
-                            right={() => Arrow()}
-                            onClick={goToTutorial}
-                        />
-                        <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
-                        <Item
-                            onClick={goToOrgs}
-                            title={f('organisations')}
-                            right={() => Arrow()}
-                        />
-                        <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
-                        <ExternalLink
-                            href={`http://caruma.io/downloads/Terms_And_Conditions_Caruma_${config.language === 'en' ? 'En' : 'Pl'}.pdf`}
-                        >
-                            <Item
-                                style={{ width: '100%' }}
-                                title={f('tos')}
-                                right={() => Arrow()}
-                            />
-                        </ExternalLink>
-                        <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
-                        <Item
-                            title={f('deleteAccount')}
-                            right={() => Arrow()}
-                            onClick={goToRemoveAccount}
-                        />
-                        <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
-                        {/* <Item
-                            title={f("darkMode")}
-                            right={() => (
-                                <Switch
-                                    value={darkMode}
-                                    onChange={toggleDarkMode}
-                                    thumbColor={color(darkMode ? 3 : 2)}
-                                    trackColor={{
-                                        true: color(3) + "aa",
-                                        false: color(2) + "aa"
-                                    }}
-                                />
-                            )}
-                        /> */}
-                        <Item
-                            title={f('expertMode')}
-                            right={() => (
-                                <Switch
-                                    value={expertMode}
-                                    onChange={toggleExpertMode}
-                                    thumbColor={color(expertMode ? 3 : 2)}
-                                    trackColor={{
-                                        true: color(3) + 'aa',
-                                        false: color(2) + 'aa'
-                                    }}
-                                />
-                            )}
-                        />
-                        <Item
-                            title={f('bioAuth')}
-                            right={() => (
-                                <Switch
-                                    value={bioAuth}
-                                    onChange={toggleBioAuth}
-                                    thumbColor={color(bioAuth ? 3 : 2)}
-                                    trackColor={{
-                                        true: color(3) + 'aa',
-                                        false: color(2) + 'aa'
-                                    }}
-                                />
-                            )}
-                        />
-                        {expertMode && (
-                            <>
-                                <Divider style={[styles.divider, { backgroundColor: color(2) }]} />
-                                <ThemedText>{f('accAddress')}</ThemedText>
-                                <CopyField
-                                    value={config.account.address}
-                                    copy={copyClipboard}
-                                />
-                                <ThemedText>{f('installId')}</ThemedText>
-                                <CopyField
-                                    value={process.env.EXPO_PUBLIC_BUILD_VERSION as string}
-                                    copy={copyClipboard}
-                                />
-                            </>
-                        )}
-                        <ThemedText style={styles.watermark}>One Key by Caruma v 1.0.0</ThemedText>
-                    </Card.Content>
-                </Card>
+            <Header title={t('backToMap')} />
+            <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
+                <SwitchCard
+                    bioAuth={bioAuth}
+                    expertMode={expertMode}
+                    setExpertMode={setExpertMode}
+                    setSnackBar={setSnackBar}
+                />
                 <ThemedView style={styles.btns}>
                     <TouchableOpacity
-                        style={[styles.btn, { backgroundColor: color(4) }]}
+                        style={[styles.btn, { backgroundColor: color.blue }]}
                         onPress={viewRecovery}
                     >
-                        <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>{f('showRecPhrase')}</ThemedText>
+                        <ThemedText style={{ color: Colors.dark.font, fontFamily: 'PoppinsBold' }}>{t('showRecPhrase')}</ThemedText>
                         <Image
                             style={{ width: 15, marginLeft: '5%' }}
                             source={lock}
                         />
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.btn, { backgroundColor: color(5) }]}
+                        style={[styles.btn, { backgroundColor: color.orange }]}
                         onPress={goToLogoutSubmit}
                     >
-                        <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>{f('logOut')}</ThemedText>
+                        <ThemedText style={{ color: Colors.dark.font, fontFamily: 'PoppinsBold' }}>{t('logOut')}</ThemedText>
                     </TouchableOpacity>
                 </ThemedView>
             </SafeAreaView>
             <Snackbar
                 visible={snackBar}
                 onDismiss={() => setSnackBar(false)}
-                style={{ backgroundColor: color(4) }}
+                style={{ backgroundColor: color.blue }}
                 duration={Snackbar.DURATION_SHORT}
             >
-                {f('valueClipboard')}
+                {t('valueClipboard')}
             </Snackbar>
             <Portal>
                 <Modal
                     visible={recovery}
                     onDismiss={() => closePhrase()}
-                    contentContainerStyle={containerStyle as any}
+                    contentContainerStyle={[containerStyle as any, { backgroundColor: adjustColor(color.background, 10) }]}
                 >
-                    <ThemedText>{f('yourRecPhrase')}</ThemedText>
-                    <ThemedText style={[styles.phrase, { borderColor: color(1) }]}>{config.account.seed}</ThemedText>
+                    <ThemedText style={{ marginBottom: '10%', fontSize: 18 }}>{t('yourRecPhrase')}</ThemedText>
+                    <ThemedText style={[styles.phrase, { borderColor: color.font }]}>{config.account.seed}</ThemedText>
                     <TouchableOpacity
                         style={styles.btn2}
                         onPress={copyPhrase}
                     >
-                        <ThemedText>{f('copy')}</ThemedText>
+                        <ThemedText>{t('copy')}</ThemedText>
                         <Image
-                            source={theme === 'light' ? copyl : copyDark}
+                            source={theme === 'light' ? copy : copyDark}
                             style={styles.copy}
                         />
                     </TouchableOpacity>
@@ -249,76 +127,10 @@ export default function Settings() {
         </>
     );
 }
-export function CopyField({ value, copy, style }: { value: string; copy?: (value: string) => void; style?: StyleProp<ViewStyle> }) {
-    const { color, theme } = useTheme();
-    return (
-        <TouchableOpacity
-            onPress={() => copy?.(value)}
-            style={[styles.seed, { backgroundColor: color(2) }, style]}
-        >
-            <ThemedText
-                numberOfLines={1}
-                style={[styles.seedText, { color: color(4), textOverflow: 'ellipsis' }]}
-            >
-                {value}
-            </ThemedText>
-            <Image
-                source={theme === 'dark' ? copyDark : copyl}
-                style={{ width: 15, marginLeft: 10 }}
-            />
-        </TouchableOpacity>
-    );
-}
-export function Item({
-    style,
-    title,
-    right,
-    onClick
-}: {
-    style?: StyleProp<ViewStyle>;
-    title: string;
-    right: () => React.JSX.Element;
-    onClick?: () => void;
-}) {
-    return (
-        <TouchableOpacity
-            style={[style, styles.item]}
-            onPress={onClick}
-        >
-            <ThemedText style={{ fontSize: 12 }}>{title}</ThemedText>
-            {right()}
-        </TouchableOpacity>
-    );
-}
 
 const styles = StyleSheet.create({
-    seed: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: 40,
-        width: '100%',
-
-        paddingHorizontal: 15,
-
-        borderRadius: 20
-    },
-    seedText: {
-        fontSize: 12,
-        textAlign: 'center',
-        flex: 1
-    },
     card: {
         width: '90%'
-    },
-    item: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-
-        // margin: 5
     },
     divider: {
         height: 1,
@@ -339,12 +151,6 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         borderRadius: 30,
         height: 50
-    },
-    watermark: {
-        fontSize: 10,
-        opacity: 0.7,
-        textAlign: 'center',
-        margin: 10
     },
     phrase: {
         borderWidth: 1,

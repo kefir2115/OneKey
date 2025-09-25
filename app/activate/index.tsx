@@ -4,6 +4,7 @@ import Button from '@/components/ui/Button';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
 import { getOrganisations } from '@/components/utils/Api';
+import { copy, copyDark } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
@@ -16,12 +17,8 @@ import { Card, Button as PaperButton, Snackbar } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const back = require('../../assets/images/icons/back.svg');
-const copy = require('../../assets/images/icons/copy.svg');
-const copyDark = require('../../assets/images/icons/copy-dark.svg');
-
 export default function Activate() {
-    const { f } = useLang();
+    const { t } = useLang();
     const config = useConfig();
     const router = useRouter();
     const { color, theme } = useTheme();
@@ -68,9 +65,9 @@ export default function Activate() {
     return (
         <>
             <Header title="Activate account" />
-            <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
+            <SafeAreaView style={[{ backgroundColor: color.background }, global.container]}>
                 <ThemedView style={s.subtitleContainer}>
-                    <ThemedText style={s.subtitle}>{f('activateMsg')}</ThemedText>
+                    <ThemedText style={s.subtitle}>{t('activateMsg')}</ThemedText>
                 </ThemedView>
                 <ThemedView style={s.qr}>
                     <QRCode
@@ -81,10 +78,10 @@ export default function Activate() {
                 </ThemedView>
                 <TouchableOpacity
                     onPress={copyAddress}
-                    style={[s.seed, { backgroundColor: color(2) }]}
+                    style={[s.seed, { backgroundColor: color.lighterBackground }]}
                 >
                     <ThemedText
-                        style={[s.seedText, { color: color(4) }]}
+                        style={[s.seedText, { color: color.blue }]}
                         numberOfLines={1}
                     >
                         {config.account.address}
@@ -94,34 +91,34 @@ export default function Activate() {
                         style={{ width: 15, marginLeft: 10 }}
                     />
                 </TouchableOpacity>
-                <Card style={[s.seedContainer, { backgroundColor: color(0) }]}>
+                <Card style={[s.seedContainer, { backgroundColor: color.background }]}>
                     <Card.Title
                         title="Your secret password"
-                        titleStyle={[s.seedTitle, { color: color(1) }]}
+                        titleStyle={[s.seedTitle, { color: color.font }]}
                     />
                     <Card.Content>
-                        <ThemedText style={s.seedSubtitle}>{f('saveSeedMsg')}</ThemedText>
+                        <ThemedText style={s.seedSubtitle}>{t('saveSeedMsg')}</ThemedText>
                     </Card.Content>
                     <Card.Actions>
-                        <Button onClick={copySeed}>{f('copy')}</Button>
+                        <Button onClick={copySeed}>{t('copy')}</Button>
                     </Card.Actions>
                 </Card>
                 <PaperButton
                     mode="contained"
                     disabled={!authorized}
-                    style={[s.activateBtn, { backgroundColor: authorized ? color(4) : color(2) }]}
+                    style={[s.activateBtn, { backgroundColor: authorized ? color.blue : color.lighterBackground }]}
                     onPress={activate}
                 >
-                    {f('activate')}
+                    {t('activate')}
                 </PaperButton>
             </SafeAreaView>
             <Snackbar
                 visible={snackBar}
                 onDismiss={() => setSnackBar(false)}
-                style={{ backgroundColor: color(4) }}
+                style={{ backgroundColor: color.blue }}
                 duration={Snackbar.DURATION_SHORT}
             >
-                {f('valueClipboard')}
+                {t('valueClipboard')}
             </Snackbar>
         </>
     );

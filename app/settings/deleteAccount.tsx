@@ -4,6 +4,7 @@ import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
 import { logOut } from '@/components/utils/Transactions';
 import { Colors } from '@/constants/Colors';
+import { check, warning, warningDark } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
@@ -14,15 +15,11 @@ import { useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const check = require('../../assets/images/icons/check.svg');
-const warn = require('../../assets/images/warning.svg');
-const warnDark = require('../../assets/images/warning-dark.svg');
-
 export default function DeleteAccount() {
     const config = useConfig();
     const cache = useCache();
     const router = useRouter();
-    const { f } = useLang();
+    const { t } = useLang();
     const { color, theme } = useTheme();
 
     const [confirm, setConfirm] = useState(false);
@@ -39,19 +36,25 @@ export default function DeleteAccount() {
 
     return (
         <>
-            <Header title={f('back')} />
-            <SafeAreaView style={[global.container, { backgroundColor: color(0) }]}>
+            <Header title={t('back')} />
+            <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
                 <ThemedView style={[global.container, { width: '100%' }]}>
                     <Image
-                        source={theme === 'dark' ? warnDark : warn}
+                        source={theme === 'dark' ? warningDark : warning}
                         style={style.img}
                     />
-                    <ThemedText style={style.text}>{f('deleteAccountMsg')}</ThemedText>
+                    <ThemedText style={style.text}>{t('deleteAccountMsg')}</ThemedText>
                     <TouchableOpacity
-                        style={[style.btn, { backgroundColor: color(confirm ? 0 : 3), borderColor: color(!confirm ? 0 : 3) }]}
+                        style={[
+                            style.btn,
+                            {
+                                backgroundColor: confirm ? color.background : color.green,
+                                borderColor: !confirm ? color.background : color.green
+                            }
+                        ]}
                         onPress={accept}
                     >
-                        {!confirm && <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>OK</ThemedText>}
+                        {!confirm && <ThemedText style={{ color: Colors.dark.font, fontFamily: 'PoppinsBold' }}>OK</ThemedText>}
                         {confirm && (
                             <Image
                                 source={check}
@@ -61,10 +64,10 @@ export default function DeleteAccount() {
                     </TouchableOpacity>
                 </ThemedView>
                 <TouchableOpacity
-                    style={[style.btn, { backgroundColor: color(confirm ? 5 : 2) }]}
+                    style={[style.btn, { backgroundColor: confirm ? color.orange : color.lighterBackground }]}
                     onPress={proceed}
                 >
-                    <ThemedText style={{ color: Colors.dark[1], fontFamily: 'PoppinsBold' }}>{f('deleteAccount')}</ThemedText>
+                    <ThemedText style={{ color: Colors.dark.font, fontFamily: 'PoppinsBold' }}>{t('deleteAccount')}</ThemedText>
                 </TouchableOpacity>
             </SafeAreaView>
         </>

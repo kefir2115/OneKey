@@ -1,7 +1,7 @@
-import useTheme from "@/hooks/useTheme";
-import { useState } from "react";
-import { StyleProp, StyleSheet, TextInput, TextInputProps, ViewStyle } from "react-native";
-import { ThemedView } from "../ThemedView";
+import useTheme from '@/hooks/useTheme';
+import { useState } from 'react';
+import { StyleProp, StyleSheet, TextInput, TextInputProps, ViewStyle } from 'react-native';
+import { ThemedView } from '../ThemedView';
 
 export interface TextAreaProps extends TextInputProps {
     containerStyle?: StyleProp<ViewStyle>;
@@ -13,7 +13,7 @@ export default function TextArea({ containerStyle, placeholder, children, ...res
     const { color, theme } = useTheme();
     const [height, setHeight] = useState(20);
     return (
-        <ThemedView style={[styles.container, { borderColor: color(3) }, containerStyle]}>
+        <ThemedView style={[styles.container, { borderColor: color.green }, containerStyle]}>
             <TextInput
                 multiline
                 placeholder={placeholder}
@@ -29,16 +29,16 @@ export default function TextArea({ containerStyle, placeholder, children, ...res
 
 const styles = StyleSheet.create({
     container: {
-        width: "100%",
+        width: '100%',
 
         borderWidth: 1,
-        borderStyle: "solid",
+        borderStyle: 'solid',
         borderRadius: 15
     },
     input: {
         margin: 10,
         fontSize: 20,
         lineHeight: 24,
-        fontFamily: "PoppinsRegular"
+        fontFamily: 'PoppinsRegular'
     }
 });

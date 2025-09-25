@@ -1,7 +1,7 @@
-import useTheme from "@/hooks/useTheme";
-import { StyleProp, TextStyle } from "react-native";
-import { Button as Btn } from "react-native-paper";
-import { StyleProps } from "react-native-reanimated";
+import useTheme from '@/hooks/useTheme';
+import { StyleProp, TextStyle } from 'react-native';
+import { Button as Btn } from 'react-native-paper';
+import { StyleProps } from 'react-native-reanimated';
 
 interface ButtonProps {
     children?: any;
@@ -15,8 +15,8 @@ export default function Button({ children, onClick, style, textStyle, right }: B
     const { color } = useTheme();
     return (
         <Btn
-            style={[{ backgroundColor: color(0) }, style]}
-            labelStyle={[{ color: color(1) }, textStyle]}
+            style={[{ backgroundColor: color.background }, style]}
+            labelStyle={[{ color: color.font }, textStyle]}
             onPress={onClick}
         >
             {children}

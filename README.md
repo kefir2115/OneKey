@@ -21,7 +21,7 @@ npx expo start
 
 > Execute
 > ```bash
-> npx expo prebuild -c
+> npx expo prebuild
 > ``` 
 
 ## How to build

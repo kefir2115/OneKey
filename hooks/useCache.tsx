@@ -50,8 +50,8 @@ export function CacheProvider({ children }: CacheProviderProps) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const cfg = new Cache();
-        cfg.load((loadedCache) => {
+        const instance = new Cache();
+        instance.load((loadedCache) => {
             setCache(loadedCache);
             setLoading(false);
         });
@@ -71,7 +71,7 @@ export function CacheProvider({ children }: CacheProviderProps) {
 }
 
 export default function useCache() {
-    const c = useContext(CacheContext);
-    if (!c) throw new Error('No cache provider found!');
-    return c;
+    const context = useContext(CacheContext);
+    if (!context) throw new Error('No cache provider found!');
+    return context;
 }

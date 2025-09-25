@@ -67,7 +67,13 @@
       ],
       "expo-local-authentication",
       "expo-quick-actions",
-      "expo-localization"
+      "expo-localization",
+      [
+        "react-native-edge-to-edge",
+        {
+          "enforceNavigationBarContrast": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

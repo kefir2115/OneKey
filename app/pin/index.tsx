@@ -2,11 +2,11 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
+import { arrow, circle, circleFull, circleFullDark, finger } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
-import { FontAwesome } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 import { authenticateAsync } from 'expo-local-authentication';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,17 +15,15 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button, Dialog, Portal, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const arrow = require('../../assets/images/icons/arrow.svg');
-const finger = require('../../assets/images/icons/finger.svg');
 const COLOR = '#858FAB';
 
 export default function Pin() {
-    const { f } = useLang();
+    const { t } = useLang();
     const config = useConfig();
     const router = useRouter();
     const params = useLocalSearchParams();
     const prevPin = params.pin ? (params.pin as string).split(',') : [];
-    const { color } = useTheme();
+    const { color, theme } = useTheme();
     const [nums, setNums] = useState<number[]>([]);
     const [dialog, setDialog] = useState(false);
     const [tries, setTries] = useState(3);
@@ -71,12 +69,13 @@ export default function Pin() {
                 setTries(3);
             } else {
                 Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nums.join(',')).then((sha) => {
-                    if (config.pin === sha)
+                    if (config.pin === sha) {
+                        router.dismiss(params.pin !== undefined ? 2 : 1);
                         router.replace({
                             pathname: (params.next as any) || '/',
                             params: params
                         });
-                    else {
+                    } else {
                         setNums([]);
                         showDialog();
                         setTries((t) => --t);
@@ -108,28 +107,28 @@ export default function Pin() {
             return (
                 <View
                     key={Math.random()}
-                    style={[s.pinView, { borderColor: '#0000' }]}
+                    style={[style.pinView, { borderColor: '#0000' }]}
                 ></View>
             );
         return (
             <TouchableOpacity
                 key={n}
-                style={[s.pinView, { borderColor: COLOR }]}
+                style={[style.pinView, { borderColor: COLOR }]}
                 onPress={() => (value === 'finger' ? bioAuth() : handleClick(n))}
             >
                 {value === 'arrow' && (
                     <Image
                         source={arrow}
-                        style={s.pinArrow}
+                        style={style.pinArrow}
                     />
                 )}
                 {value === 'finger' && (
                     <Image
                         source={finger}
-                        style={s.pinArrow}
+                        style={style.pinArrow}
                     />
                 )}
-                {n >= 0 && <ThemedText style={s.pinText}>{value}</ThemedText>}
+                {n >= 0 && <ThemedText style={style.pinText}>{value}</ThemedText>}
             </TouchableOpacity>
         );
     };
@@ -144,23 +143,21 @@ export default function Pin() {
 
     return (
         <>
-            <Header title={f('back')} />
-            <SafeAreaView style={[{ backgroundColor: color(0) }, global.container]}>
-                <ThemedText style={s.insert}>{prevPin.length === 0 ? f('pinInsert') : f('pinRepeat')}</ThemedText>
-                <ThemedView style={s.circles}>
+            <Header title={t('back')} />
+            <SafeAreaView style={[{ backgroundColor: color.background }, global.container]}>
+                <ThemedText style={style.insert}>{prevPin.length === 0 ? t('pinInsert') : t('pinRepeat')}</ThemedText>
+                <ThemedView style={style.circles}>
                     {Array(4)
                         .fill(0)
                         .map((n, i) => (
-                            <FontAwesome
-                                key={i}
-                                name={!nums[i] ? 'circle-thin' : 'circle'}
-                                size={25}
-                                color={color(1)}
-                                style={{ margin: 8 }}
+                            <Image
+                                key={`circle-${i}`}
+                                source={nums[i] === undefined ? circle : theme === 'light' ? circleFull : circleFullDark}
+                                style={style.circle}
                             />
                         ))}
                 </ThemedView>
-                <ThemedView style={s.pinContainer}>
+                <ThemedView style={style.pinContainer}>
                     {buttons.map((d, idx) => createButton(String(d), typeof d === 'string' ? -1 * idx : d))}
                 </ThemedView>
             </SafeAreaView>
@@ -170,9 +167,9 @@ export default function Pin() {
                     onDismiss={hideDialog}
                     style={{ borderRadius: 25 }}
                 >
-                    <Dialog.Title>{f('pinInvalid')}</Dialog.Title>
+                    <Dialog.Title>{t('pinInvalid')}</Dialog.Title>
                     <Dialog.Content>
-                        <Text variant="bodyMedium">{f('pinTries', String(tries))}</Text>
+                        <Text variant="bodyMedium">{t('pinTries', String(tries))}</Text>
                     </Dialog.Content>
                     <Dialog.Actions>
                         <Button onPress={hideDialog}>Done</Button>
@@ -182,7 +179,7 @@ export default function Pin() {
         </>
     );
 }
-const s = StyleSheet.create({
+const style = StyleSheet.create({
     insert: {
         fontSize: 40,
         lineHeight: 60,
@@ -223,5 +220,10 @@ const s = StyleSheet.create({
     pinArrow: {
         width: '50%',
         aspectRatio: 1
+    },
+    circle: {
+        width: 30,
+        aspectRatio: 1,
+        margin: 5
     }
 });
