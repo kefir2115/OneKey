@@ -25,3 +25,5 @@ export const Colors = {
     orange: "#D37A5E"
   } as Color
 }
+
+export const PIN_COLOR = '#858FAB';

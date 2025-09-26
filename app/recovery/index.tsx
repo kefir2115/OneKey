@@ -10,14 +10,15 @@ import useTheme from '@/hooks/useTheme';
 import 'react-native-get-random-values';
 
 import { seedToAddress } from '@/components/utils/Transactions';
-import { check, copy, copyDark, logo0, logo0Dark, xmark } from '@/constants/Icons';
+import { check, logo0, logo0Dark, xmark } from '@/constants/Icons';
 import useConfig from '@/hooks/useConfig';
 import { getStringAsync } from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Button, Card } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CopyField from '../settings/items/CopyField';
 
 export default function Recovery() {
     const { t } = useLang();
@@ -67,16 +68,11 @@ export default function Recovery() {
                             value={value}
                             onChangeText={setValue}
                         >
-                            <TouchableOpacity
-                                style={[{ backgroundColor: color.lighterBackground }, style.clipBox]}
-                                onPress={setFromClipboard}
-                            >
-                                <ThemedText style={style.clipText}>{t('pasteClipboard')}</ThemedText>
-                                <Image
-                                    source={theme === 'dark' ? copyDark : copy}
-                                    style={style.copyIcon}
-                                />
-                            </TouchableOpacity>
+                            <CopyField
+                                style={style.clipBox}
+                                value={t('pasteClipboard')}
+                                copy={setFromClipboard}
+                            />
                         </TextArea>
                         <ThemedView style={[style.infoBox, { borderColor: isValid ? color.green : '#ce7777ff' }]}>
                             <Image
@@ -115,14 +111,9 @@ const style = StyleSheet.create({
         marginVertical: 10
     },
     clipBox: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-
-        margin: 10,
-        padding: 5,
-        borderRadius: 20
+        alignSelf: 'center',
+        width: '80%',
+        marginVertical: '5%'
     },
     clipText: {
         textAlign: 'center'

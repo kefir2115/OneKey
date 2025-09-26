@@ -43,3 +43,4 @@ export const xmark = require("../assets/images/icons/xmark.svg");
 export const circle = require("../assets/images/icons/circle.svg");
 export const circleFull = require("../assets/images/icons/circleFull.svg");
 export const circleFullDark = require("../assets/images/icons/circleFull-dark.svg");
+

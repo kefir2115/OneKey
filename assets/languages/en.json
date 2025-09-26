@@ -28,6 +28,7 @@
     "darkMode": "Dark mode",
     "expertMode": "Expert mode",
     "bioAuth": "Biometric authorization",
+    "history": "History",
 
     "accAddress": "Account address",
     "installId": "Installation ID",
@@ -97,5 +98,8 @@
     "operationSuccess": "Operation successfull",
     "operationFail": "Operation failed",
 
-    "tos": "Privacy policy"
+    "tos": "Privacy policy",
+    "gotIt": "Got it",
+
+    "noHistory": "No recent gates opened. Opened gates from last 30 days will appear here."
 }

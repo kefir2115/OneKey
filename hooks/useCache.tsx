@@ -1,7 +1,12 @@
-import { Device, Key, Organisation } from '@/components/utils/Api';
+import { Device, Organisation } from '@/components/utils/Api';
 import * as FileSystem from 'expo-file-system';
 import { createContext, useContext, useEffect, useState } from 'react';
 
+export interface HistoryItem {
+    success: boolean;
+    address: string;
+    at: number;
+}
 export interface CacheProviderProps {
     children: any;
 }
@@ -11,7 +16,7 @@ export class Cache {
     data = {
         devices: [] as Device[],
         orgs: [] as Organisation[],
-        keys: [] as Key[]
+        history: [] as HistoryItem[]
     };
 
     loaded: boolean = false;

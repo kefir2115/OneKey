@@ -101,7 +101,7 @@ export async function logOut(config: Config, cache: Cache): Promise<boolean> {
 
         cache.data = {
             devices: [],
-            keys: [],
+            history: [],
             orgs: []
         };
         cache.save();

@@ -28,6 +28,7 @@
     "darkMode": "Ciemny motyw",
     "expertMode": "Tryb experta",
     "bioAuth": "Autoryzacja biometryczne",
+    "history": "Historia",
 
     "accAddress": "Adres konta",
     "installId": "ID instalacji",
@@ -97,5 +98,8 @@
     "operationSuccess": "Operacja powiodła się",
     "operationFail": "Operacja nie powiodła się",
 
-    "tos": "Polityka prywatności"
+    "tos": "Polityka prywatności",
+    "gotIt": "Rozumiem",
+
+    "noHistory": "Brak ostatnio otwartych urządzeń. Otwarte urządzenia z ostatnich 30 dni pojawią się tutaj."
 }

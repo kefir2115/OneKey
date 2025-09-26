@@ -1,22 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import Image from '@/components/ui/Image';
 import { Device, getDevices, getOrganisations } from '@/components/utils/Api';
-import {
-    check,
-    navigation,
-    navigationDark,
-    navigationOn,
-    navigationOnDark,
-    pin0,
-    pin1,
-    qr,
-    qrDark,
-    settings,
-    settingsDark,
-    stack,
-    stackDark,
-    xmark
-} from '@/constants/Icons';
+import { check, navigation, navigationDark, navigationOn, navigationOnDark, pin0, pin1, xmark } from '@/constants/Icons';
 import { global, mapDark, mapLight } from '@/constants/Styles';
 import useCache from '@/hooks/useCache';
 import useConfig from '@/hooks/useConfig';
@@ -29,11 +14,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Dimensions, Keyboard, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapView, { Marker } from 'react-native-maps';
-import { Button, Card, Modal, Portal, Searchbar, Snackbar } from 'react-native-paper';
-import { IconSource } from 'react-native-paper/lib/typescript/components/Icon';
+import { Button, Card, Modal, Portal, Snackbar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomList from './items/BottomList';
 import SearchList from './items/SearchList';
+import TopBar from './items/TopBar';
 import Tutorial from './items/Tutorial';
 
 export default function Map() {
@@ -185,19 +170,8 @@ export default function Map() {
         if (locStatus !== 0) setLocationModal(true);
     };
 
-    const openScanner = () => {
-        router.navigate('/map/scanner');
-        setResults([]);
-        setSearch('');
-    };
-
     const openKeyList = () => {
         router.navigate('/devices');
-        setResults([]);
-        setSearch('');
-    };
-    const goToSettings = () => {
-        router.navigate('/settings');
         setResults([]);
         setSearch('');
     };
@@ -277,44 +251,16 @@ export default function Map() {
                     }
                 ]}
             >
-                <View style={style.topbar}>
-                    <Searchbar
-                        value={search}
-                        onChangeText={updateSearchBar}
-                        style={[style.searchBox, { backgroundColor: color.background }]}
-                        inputStyle={{ color: color.font }}
-                        cursorColor={color.blue}
-                        placeholder={t('search')}
-                        placeholderTextColor={color.font + 'aa'}
-                        iconColor={color.font}
-                        icon={searchFocus ? ('arrow-left' as IconSource) : undefined}
-                        onIconPress={() => onIconPress()}
-                        onPress={() => onSearchPress()}
-                    />
-                    <TouchableOpacity
-                        style={{ width: 50, aspectRatio: 1 }}
-                        onPress={goToSettings}
-                    >
-                        <Image source={theme === 'light' ? settings : settingsDark} />
-                    </TouchableOpacity>
-                </View>
-                <View
-                    style={style.bar}
-                    pointerEvents="box-none"
-                >
-                    <TouchableOpacity
-                        style={[style.rightImg]}
-                        onPress={() => setSatelite((s) => !s)}
-                    >
-                        <Image source={theme === 'light' ? stack : stackDark} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[style.rightImg]}
-                        onPress={openScanner}
-                    >
-                        <Image source={theme === 'light' ? qr : qrDark} />
-                    </TouchableOpacity>
-                </View>
+                <TopBar
+                    search={search}
+                    searchFocus={searchFocus}
+                    onIconPress={onIconPress}
+                    onSearchPress={onSearchPress}
+                    updateSearchBar={updateSearchBar}
+                    setResults={setResults}
+                    setSatelite={setSatelite}
+                    setSearch={setSearch}
+                />
                 <View
                     style={[style.bar]}
                     pointerEvents="box-none"
@@ -424,17 +370,6 @@ export default function Map() {
 }
 
 const style = StyleSheet.create({
-    topbar: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%'
-    },
-    searchBox: {
-        margin: '5%',
-        width: '75%'
-    },
     bar: {
         display: 'flex',
         flexDirection: 'column',

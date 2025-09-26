@@ -48,6 +48,10 @@ export default function RootLayout() {
                     options={{ headerShown: false }}
                 />
                 <Stack.Screen
+                    name="history/index"
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
                     name="map/index"
                     options={{ headerShown: false }}
                 />

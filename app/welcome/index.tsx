@@ -23,7 +23,8 @@ export default function Welcome() {
         router.navigate({
             pathname: '/pin',
             params: {
-                next: '/recovery'
+                next: '/recovery',
+                noDismiss: '1'
             }
         });
     };
@@ -31,7 +32,8 @@ export default function Welcome() {
         router.navigate({
             pathname: '/pin',
             params: {
-                next: '/activate'
+                next: '/activate',
+                noDismiss: '1'
             }
         });
     };

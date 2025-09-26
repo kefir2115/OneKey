@@ -2,9 +2,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import Button from '@/components/ui/Button';
 import { Header } from '@/components/ui/Header';
-import Image from '@/components/ui/Image';
 import { getOrganisations } from '@/components/utils/Api';
-import { copy, copyDark } from '@/constants/Icons';
+import { adjustColor } from '@/components/utils/Utils';
 import { global } from '@/constants/Styles';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
@@ -12,10 +11,11 @@ import useTheme from '@/hooks/useTheme';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Card, Button as PaperButton, Snackbar } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CopyField from '../settings/items/CopyField';
 
 export default function Activate() {
     const { t } = useLang();
@@ -76,22 +76,12 @@ export default function Activate() {
                         size={200}
                     />
                 </ThemedView>
-                <TouchableOpacity
-                    onPress={copyAddress}
-                    style={[s.seed, { backgroundColor: color.lighterBackground }]}
-                >
-                    <ThemedText
-                        style={[s.seedText, { color: color.blue }]}
-                        numberOfLines={1}
-                    >
-                        {config.account.address}
-                    </ThemedText>
-                    <Image
-                        source={theme === 'dark' ? copyDark : copy}
-                        style={{ width: 15, marginLeft: 10 }}
-                    />
-                </TouchableOpacity>
-                <Card style={[s.seedContainer, { backgroundColor: color.background }]}>
+                <CopyField
+                    style={s.seed}
+                    value={config.account.address}
+                    copy={copyAddress}
+                />
+                <Card style={[s.seedContainer, { backgroundColor: adjustColor(color.background, 10) }]}>
                     <Card.Title
                         title="Your secret password"
                         titleStyle={[s.seedTitle, { color: color.font }]}
@@ -138,16 +128,7 @@ const s = StyleSheet.create({
         marginBottom: '5%'
     },
     seed: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: 40,
-        width: '80%',
-
-        paddingHorizontal: 15,
-
-        borderRadius: 20
+        width: '80%'
     },
     seedText: {
         fontSize: 12,
@@ -156,8 +137,8 @@ const s = StyleSheet.create({
         textOverflow: 'ellipsis'
     },
     seedContainer: {
-        // marginHorizontal: "10%",
-        margin: 'auto'
+        padding: 5,
+        margin: '5%'
     },
     seedTitle: {
         fontSize: 18,

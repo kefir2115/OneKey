@@ -24,6 +24,11 @@ export default function Open() {
         if (device === undefined) return;
 
         openDevice(device, config, cache, (result) => {
+            cache.data.history.push({
+                address: device.address,
+                success: result,
+                at: Date.now()
+            });
             router.replace({
                 pathname: '/map',
                 params: { opened: result ? 'true' : 'false' }

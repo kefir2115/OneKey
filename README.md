@@ -57,7 +57,7 @@ npx eas build --platform ios
 {
    "devices": [], // Device list
    "orgs": [], // Organisations list
-   "keys": [] // Keys list (unused)
+   "history": [] // History list
 }
 ```
 
@@ -113,13 +113,11 @@ Organisation
 }
 ```
 
-Key
+HistoryItem
 ```JSON
 {
-    "assetId": string,
-    "owner": string,
-    "supplier": {
-        "address": string
-    }
+    "success": boolean,
+    "address": string,
+    "at": number
 }
 ```

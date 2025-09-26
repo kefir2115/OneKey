@@ -16,11 +16,12 @@ import { setStringAsync } from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
 import Map, { Marker } from 'react-native-maps';
 import { Card, List, Portal, Snackbar } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Loading from '../loading';
 
 export default function Info() {
     const { t } = useLang();
@@ -35,6 +36,7 @@ export default function Info() {
 
     const [snack, setSnack] = useState<[boolean, string]>([false, '']);
     const [dev, setDev] = useState<Device | undefined>(undefined);
+    const [eventBlocked, setEventBlocked] = useState(false);
 
     const [isShortcut, setIsShortcut] = useState(false);
 
@@ -75,156 +77,175 @@ export default function Info() {
         setIsShortcut(config.shortcuts.find((s) => s.address === dev.address) !== undefined);
     };
 
-    if (!dev) return <View></View>;
+    const onSwipe = (event: any) => {
+        const { translationX, translationY } = event.nativeEvent;
+
+        if (eventBlocked) return;
+
+        if (Math.abs(translationX) > 50 && Math.abs(translationY) < 30) {
+            if (translationX > 0) {
+                setScene((s) => Math.max(0, Math.min(2, s - 1)));
+            } else {
+                setScene((s) => Math.max(0, Math.min(2, s + 1)));
+            }
+            setEventBlocked(true);
+        }
+    };
+    if (!dev) return <Loading />;
 
     return (
         <GestureHandlerRootView>
             <Header title={'Back'} />
-            <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
-                <ThemedText style={style.deviceName}>{dev.name || t('gateFallback')}</ThemedText>
-                <ThemedText style={[style.deviceName, style.deviceDesc]}>{dev.description || t('descFallback')}</ThemedText>
-                <Segments
-                    style={{ width: '90%' }}
-                    value={scene}
-                    values={[t('qrCode'), t('info'), t('more')]}
-                    icons={[
-                        <Image
-                            key={0}
-                            source={theme === 'light' ? qr : qrDark}
-                            style={style.img}
-                        />,
-                        <Image
-                            key={1}
-                            source={theme === 'light' ? stack : stackDark}
-                            style={style.img}
-                        />,
-                        <Image
-                            key={2}
-                            source={theme === 'light' ? settings : settingsDark}
-                            style={style.img}
-                        />
-                    ]}
-                    onChange={(idx) => setScene(idx)}
-                />
-                {scene === 0 && (
-                    <Card style={[qrStyle.card, { backgroundColor: adjustColor(color.background, 10) }]}>
-                        <Card.Content>
-                            <View style={{ alignSelf: 'center' }}>
-                                <QRCode
-                                    size={width / 1.75}
-                                    quietZone={width / 50}
-                                    value={`https://www.caruma.io/iot/${dev.address}`}
-                                />
-                            </View>
-                            <TouchableOpacity
-                                onPress={copySecret}
-                                style={qrStyle.field}
-                            >
-                                <ThemedText
-                                    style={qrStyle.value}
-                                    numberOfLines={1}
-                                >
-                                    {dev.address}
-                                </ThemedText>
-                                <Image
-                                    style={qrStyle.img}
-                                    source={theme === 'light' ? copy : copyDark}
-                                />
-                            </TouchableOpacity>
-                        </Card.Content>
-                    </Card>
-                )}
-                {scene === 1 && (
-                    <ScrollView
-                        style={{ width: '100%' }}
-                        contentContainerStyle={style.scroll}
-                    >
-                        <Card style={[map.mapCard, { backgroundColor: adjustColor(color.background, 10) }]}>
-                            <Card.Content style={map.mapTop}>
-                                <View style={map.status}>
-                                    <Image
-                                        source={check}
-                                        style={map.statusImg}
+            <PanGestureHandler
+                onGestureEvent={onSwipe}
+                onEnded={() => setEventBlocked(false)}
+            >
+                <SafeAreaView style={[global.container, { backgroundColor: color.background }]}>
+                    <ThemedText style={style.deviceName}>{dev.name || t('gateFallback')}</ThemedText>
+                    <ThemedText style={[style.deviceName, style.deviceDesc]}>{dev.description || t('descFallback')}</ThemedText>
+                    <Segments
+                        style={{ width: '90%' }}
+                        value={scene}
+                        values={[t('qrCode'), t('info'), t('more')]}
+                        icons={[
+                            <Image
+                                key={0}
+                                source={theme === 'light' ? qr : qrDark}
+                                style={style.img}
+                            />,
+                            <Image
+                                key={1}
+                                source={theme === 'light' ? stack : stackDark}
+                                style={style.img}
+                            />,
+                            <Image
+                                key={2}
+                                source={theme === 'light' ? settings : settingsDark}
+                                style={style.img}
+                            />
+                        ]}
+                        onChange={(idx) => setScene(idx)}
+                    />
+                    {scene === 0 && (
+                        <Card style={[qrStyle.card, { backgroundColor: adjustColor(color.background, 10) }]}>
+                            <Card.Content>
+                                <View style={{ alignSelf: 'center' }}>
+                                    <QRCode
+                                        size={width / 1.75}
+                                        quietZone={width / 50}
+                                        value={`https://www.caruma.io/iot/${dev.address}`}
                                     />
-                                    <ThemedText style={map.statusText}>
-                                        {t(Boolean(dev.active) ? 'statusActive' : 'statusDisconnected')}
+                                </View>
+                                <TouchableOpacity
+                                    onPress={copySecret}
+                                    style={qrStyle.field}
+                                >
+                                    <ThemedText
+                                        style={qrStyle.value}
+                                        numberOfLines={1}
+                                    >
+                                        {dev.address}
                                     </ThemedText>
-                                </View>
-                                <ThemedText style={map.distance}>{distance(dev.distance)}</ThemedText>
-                            </Card.Content>
-                            <View style={map.mapWrapper}>
-                                <Map
-                                    style={map.map}
-                                    region={{
-                                        latitude: dev.lat,
-                                        longitude: dev.lng,
-                                        latitudeDelta: 0.005,
-                                        longitudeDelta: 0.005
-                                    }}
-                                    customMapStyle={theme === 'dark' ? mapDark : mapLight}
-                                >
-                                    <Marker
-                                        coordinate={{ latitude: dev.lat, longitude: dev.lng }}
-                                        image={pin0}
-                                    />
-                                </Map>
-                            </View>
-                            <ThemedText style={{ textAlign: 'right', fontFamily: 'PoppinsLight' }}>
-                                {dev.details.physicalAddress.addressLine1 + ' ' + dev.details.physicalAddress.addressLine2 ||
-                                    t('addressFallback')}{' '}
-                                {dev.details.physicalAddress.postcode || ''} {dev.details.physicalAddress.city}
-                            </ThemedText>
-                            <Card.Actions>
-                                <Button
-                                    style={{ backgroundColor: color.blue + 'aa' }}
-                                    onClick={openDoor}
-                                >
-                                    {t('open')}
-                                </Button>
-                            </Card.Actions>
-                        </Card>
-                        <Card style={[device.card, { backgroundColor: adjustColor(color.background, 5) }]}>
-                            <Card.Content style={device.content}>
-                                <View style={device.top}>
                                     <Image
-                                        source={info}
-                                        style={device.img}
+                                        style={qrStyle.img}
+                                        source={theme === 'light' ? copy : copyDark}
                                     />
-                                    <ThemedText style={device.title}>{t('device')}</ThemedText>
-                                </View>
-                                <List.Section style={device.list}>
-                                    <List.Item
-                                        titleStyle={{ color: color.font }}
-                                        title={t('deviceType')}
-                                        right={() => <ThemedText>{dev.details.deviceType}</ThemedText>}
-                                    />
-                                    <List.Item
-                                        titleStyle={{ color: color.font }}
-                                        title={t('deviceModel')}
-                                        right={() => <ThemedText>{dev.details.deviceModel}</ThemedText>}
-                                    />
-                                </List.Section>
+                                </TouchableOpacity>
                             </Card.Content>
                         </Card>
-                    </ScrollView>
-                )}
-                {scene === 2 && (
-                    <Card style={[bonus.card, { backgroundColor: adjustColor(color.background, 10) }]}>
-                        <Card.Content>
-                            <TouchableOpacity
-                                style={[bonus.btn, { backgroundColor: adjustColor(color.background, 5) }]}
-                                onPress={toggleShortcut}
-                            >
-                                <Image
-                                    source={theme === 'light' ? open : openDark}
-                                    style={bonus.img}
-                                />
-                                <ThemedText style={bonus.text}>{t(isShortcut ? 'remShortcut' : 'addShortcut')}</ThemedText>
-                            </TouchableOpacity>
-                        </Card.Content>
-                    </Card>
-                )}
-            </SafeAreaView>
+                    )}
+                    {scene === 1 && (
+                        <ScrollView
+                            style={{ width: '100%' }}
+                            contentContainerStyle={style.scroll}
+                        >
+                            <Card style={[map.mapCard, { backgroundColor: adjustColor(color.background, 10) }]}>
+                                <Card.Content style={map.mapTop}>
+                                    <View style={map.status}>
+                                        <Image
+                                            source={check}
+                                            style={map.statusImg}
+                                        />
+                                        <ThemedText style={map.statusText}>
+                                            {t(Boolean(dev.active) ? 'statusActive' : 'statusDisconnected')}
+                                        </ThemedText>
+                                    </View>
+                                    <ThemedText style={map.distance}>{distance(dev.distance)}</ThemedText>
+                                </Card.Content>
+                                <View style={map.mapWrapper}>
+                                    <Map
+                                        style={map.map}
+                                        region={{
+                                            latitude: dev.lat,
+                                            longitude: dev.lng,
+                                            latitudeDelta: 0.005,
+                                            longitudeDelta: 0.005
+                                        }}
+                                        customMapStyle={theme === 'dark' ? mapDark : mapLight}
+                                    >
+                                        <Marker
+                                            coordinate={{ latitude: dev.lat, longitude: dev.lng }}
+                                            image={pin0}
+                                        />
+                                    </Map>
+                                </View>
+                                <ThemedText style={{ textAlign: 'right', fontFamily: 'PoppinsLight' }}>
+                                    {dev.details.physicalAddress.addressLine1 + ' ' + dev.details.physicalAddress.addressLine2 ||
+                                        t('addressFallback')}{' '}
+                                    {dev.details.physicalAddress.postcode || ''} {dev.details.physicalAddress.city}
+                                </ThemedText>
+                                <Card.Actions>
+                                    <Button
+                                        style={{ backgroundColor: color.blue + 'aa' }}
+                                        onClick={openDoor}
+                                    >
+                                        {t('open')}
+                                    </Button>
+                                </Card.Actions>
+                            </Card>
+                            <Card style={[device.card, { backgroundColor: adjustColor(color.background, 5) }]}>
+                                <Card.Content style={device.content}>
+                                    <View style={device.top}>
+                                        <Image
+                                            source={info}
+                                            style={device.img}
+                                        />
+                                        <ThemedText style={device.title}>{t('device')}</ThemedText>
+                                    </View>
+                                    <List.Section style={device.list}>
+                                        <List.Item
+                                            titleStyle={{ color: color.font }}
+                                            title={t('deviceType')}
+                                            right={() => <ThemedText>{dev.details.deviceType}</ThemedText>}
+                                        />
+                                        <List.Item
+                                            titleStyle={{ color: color.font }}
+                                            title={t('deviceModel')}
+                                            right={() => <ThemedText>{dev.details.deviceModel}</ThemedText>}
+                                        />
+                                    </List.Section>
+                                </Card.Content>
+                            </Card>
+                        </ScrollView>
+                    )}
+                    {scene === 2 && (
+                        <Card style={[bonus.card, { backgroundColor: adjustColor(color.background, 10) }]}>
+                            <Card.Content>
+                                <TouchableOpacity
+                                    style={[bonus.btn, { backgroundColor: adjustColor(color.background, 5) }]}
+                                    onPress={toggleShortcut}
+                                >
+                                    <Image
+                                        source={theme === 'light' ? open : openDark}
+                                        style={bonus.img}
+                                    />
+                                    <ThemedText style={bonus.text}>{t(isShortcut ? 'remShortcut' : 'addShortcut')}</ThemedText>
+                                </TouchableOpacity>
+                            </Card.Content>
+                        </Card>
+                    )}
+                </SafeAreaView>
+            </PanGestureHandler>
             <Portal>
                 <Snackbar
                     duration={2000}

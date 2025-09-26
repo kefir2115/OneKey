@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { adjustColor } from '@/components/utils/Utils';
 import { global } from '@/constants/Styles';
 import useLang from '@/hooks/useLang';
 import useTheme from '@/hooks/useTheme';
@@ -47,7 +48,7 @@ export default function Loading(prop: LoadingProps) {
                     <ThemedText style={style.subtitle}>{subtitle}</ThemedText>
                 </View>
                 {address && (
-                    <ThemedView style={style.address}>
+                    <ThemedView style={[style.address, { backgroundColor: adjustColor(color.background, 8) }]}>
                         <ThemedText style={style.street}>{address.street}</ThemedText>
                         <ThemedText style={style.code}>{address.code}</ThemedText>
                     </ThemedView>

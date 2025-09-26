@@ -141,7 +141,7 @@ export default function SwitchCard({ expertMode, bioAuth, setExpertMode, setSnac
         </Card>
     );
 }
-const Arrow = () => (
+export const Arrow = () => (
     <Image
         style={{ aspectRatio: 0.5, width: 10, margin: 20, transform: [{ rotate: '180deg' }] }}
         source={back}

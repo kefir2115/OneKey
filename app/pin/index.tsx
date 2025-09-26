@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/ui/Header';
 import Image from '@/components/ui/Image';
-import { arrow, circle, circleFull, circleFullDark, finger } from '@/constants/Icons';
+import { circle, circleFull, circleFullDark } from '@/constants/Icons';
 import { global } from '@/constants/Styles';
 import useConfig from '@/hooks/useConfig';
 import useLang from '@/hooks/useLang';
@@ -11,11 +11,10 @@ import * as Crypto from 'expo-crypto';
 import { authenticateAsync } from 'expo-local-authentication';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Button, Dialog, Portal, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const COLOR = '#858FAB';
+import PinButton from './items/PinButton';
 
 export default function Pin() {
     const { t } = useLang();
@@ -70,7 +69,7 @@ export default function Pin() {
             } else {
                 Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nums.join(',')).then((sha) => {
                     if (config.pin === sha) {
-                        router.dismiss(params.pin !== undefined ? 2 : 1);
+                        if (params.noDismiss !== '1') router.dismiss(params.pin !== undefined ? 2 : 1);
                         router.replace({
                             pathname: (params.next as any) || '/',
                             params: params
@@ -102,37 +101,6 @@ export default function Pin() {
         });
     };
 
-    const createButton = (value: string, n: number) => {
-        if ((value === 'arrow' && nums.length === 0) || (value === 'finger' && (!config.biometric || config.pin.length === 0)))
-            return (
-                <View
-                    key={Math.random()}
-                    style={[style.pinView, { borderColor: '#0000' }]}
-                ></View>
-            );
-        return (
-            <TouchableOpacity
-                key={n}
-                style={[style.pinView, { borderColor: COLOR }]}
-                onPress={() => (value === 'finger' ? bioAuth() : handleClick(n))}
-            >
-                {value === 'arrow' && (
-                    <Image
-                        source={arrow}
-                        style={style.pinArrow}
-                    />
-                )}
-                {value === 'finger' && (
-                    <Image
-                        source={finger}
-                        style={style.pinArrow}
-                    />
-                )}
-                {n >= 0 && <ThemedText style={style.pinText}>{value}</ThemedText>}
-            </TouchableOpacity>
-        );
-    };
-
     const hideDialog = () => {
         setDialog(false);
         if (tries === 0) {
@@ -158,7 +126,16 @@ export default function Pin() {
                         ))}
                 </ThemedView>
                 <ThemedView style={style.pinContainer}>
-                    {buttons.map((d, idx) => createButton(String(d), typeof d === 'string' ? -1 * idx : d))}
+                    {buttons.map((d, idx) => (
+                        <PinButton
+                            value={String(d)}
+                            n={typeof d === 'string' ? -1 * idx : d}
+                            bioAuth={bioAuth}
+                            handleClick={handleClick}
+                            nums={nums}
+                            key={`key${idx}`}
+                        />
+                    ))}
                 </ThemedView>
             </SafeAreaView>
             <Portal>
@@ -172,7 +149,7 @@ export default function Pin() {
                         <Text variant="bodyMedium">{t('pinTries', String(tries))}</Text>
                     </Dialog.Content>
                     <Dialog.Actions>
-                        <Button onPress={hideDialog}>Done</Button>
+                        <Button onPress={hideDialog}>{t('gotIt')}</Button>
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
@@ -198,28 +175,7 @@ const style = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
 
-        width: '70%'
-    },
-    pinView: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '25%',
-        aspectRatio: 1,
-
-        margin: 5,
-
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderRadius: 100
-    },
-    pinText: {
-        margin: 'auto',
-        fontSize: 30
-    },
-    pinArrow: {
-        width: '50%',
-        aspectRatio: 1
+        width: '80%'
     },
     circle: {
         width: 30,
